@@ -3,6 +3,7 @@ import 'package:tts_wikitruyen/services/wiki_truyen/config.dart';
 //master 2
 //branch B2
 //rebase M1
+//master 4
 class Book {
   String imgPath;
   String bookPath;
