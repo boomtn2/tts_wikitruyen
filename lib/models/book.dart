@@ -1,5 +1,6 @@
 import 'package:tts_wikitruyen/services/wiki_truyen/config.dart';
 
+//git new hihi
 class Book {
   String imgPath;
   String bookPath;
