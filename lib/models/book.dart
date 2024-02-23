@@ -1,6 +1,6 @@
 import 'package:tts_wikitruyen/services/wiki_truyen/config.dart';
 
-//branch B
+//branch B2
 class Book {
   String imgPath;
   String bookPath;
