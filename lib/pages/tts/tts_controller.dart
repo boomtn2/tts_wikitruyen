@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:tts_wikitruyen/services/local/hive/hive_service.dart';
 import '../../services/wiki_truyen/convert_html.dart';
 import '../../services/wiki_truyen/service_wikitruyen.dart';
 import 'enum_state.dart';

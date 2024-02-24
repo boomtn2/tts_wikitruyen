@@ -20,6 +20,7 @@ class _BookInfoPageState extends State<BookInfoPage> {
   @override
   void dispose() {
     _controller.controllerTTS.stopTTS();
+    _controller.saveHistoryBook();
     super.dispose();
   }
 

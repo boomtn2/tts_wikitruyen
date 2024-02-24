@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
+import 'package:get/get_state_manager/get_state_manager.dart';
 
 import '../../../models/book.dart';
 import '../home_controller.dart';
@@ -32,10 +33,12 @@ class IHistoryPage extends StatelessWidget {
             length: 3,
             child: TabBarView(
               children: <Widget>[
-                ListView.builder(
-                  itemCount: _controller.listBooks.length,
-                  itemBuilder: (context, index) =>
-                      ItemBook(book: _controller.listBooks[index]),
+                Obx(
+                  ()=> ListView.builder(
+                    itemCount: _controller.listHistory.length,
+                    itemBuilder: (context, index) =>
+                        ItemBook(book: _controller.listHistory[index]),
+                  ),
                 ),
                 Container(
                   child: Text('Màn 2'),
@@ -157,7 +160,7 @@ class ItemBook extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
-                          'Tập 1',
+                          '${book.history?.nameChapter}',
                           style: TextStyle(
                               color: Colors.blue,
                               fontWeight: FontWeight.bold,

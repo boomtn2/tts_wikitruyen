@@ -3,6 +3,7 @@ import 'package:tts_wikitruyen/models/bookinfor.dart';
 
 import 'package:tts_wikitruyen/pages/tts/tts_controller.dart';
 import 'package:tts_wikitruyen/res/routers/app_router_name.dart';
+import 'package:tts_wikitruyen/services/local/hive/hive_service.dart';
 
 import 'package:tts_wikitruyen/services/wiki_truyen/convert_html.dart';
 import 'package:tts_wikitruyen/services/wiki_truyen/service_wikitruyen.dart';
@@ -115,5 +116,23 @@ class BookInfoController extends GetxController {
     jsEvalResult =
         javascriptRuntime.evaluate("""${pathJS}a('${keyFuzzySign}')""");
     return jsEvalResult.stringResult;
+  }
+
+  void saveHistoryBook(){
+    print(book.bookName);
+    book.history = History(nameChapter: nameChapterNow(), chapterPath: chapterPath(), text: textChapterNow());
+    HiveServices.addHistory(book: book);
+  }
+
+  String nameChapterNow(){  
+    return controllerTTS.titleNow.value;
+  }
+
+  String textChapterNow(){
+    return controllerTTS.data[controllerTTS.index.value].substring(controllerTTS.end.value);
+  }
+
+   String chapterPath(){
+    return '';
   }
 }

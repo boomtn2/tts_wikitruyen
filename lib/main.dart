@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'pages/tts/handler_tts.dart';
 import 'res/routers/app_router.dart';
 import 'res/routers/app_router_name.dart';
+import 'services/local/hive/hive_service.dart';
 
 void main() async {
   Get.putAsync(() => AudioService.init(
@@ -14,7 +15,7 @@ void main() async {
         androidNotificationChannelName: 'Audio',
         androidNotificationOngoing: true,
       )));
-
+  HiveServices.init();
   runApp(AppRoot());
 }
 

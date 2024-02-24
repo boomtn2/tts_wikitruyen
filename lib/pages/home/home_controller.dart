@@ -4,6 +4,7 @@ import 'package:tts_wikitruyen/models/book.dart';
 import 'package:tts_wikitruyen/models/tag_custom.dart';
 import 'package:tts_wikitruyen/res/routers/app_router_name.dart';
 import 'package:tts_wikitruyen/services/gist_data/service_gist.dart';
+import 'package:tts_wikitruyen/services/local/hive/hive_service.dart';
 
 import 'package:tts_wikitruyen/services/wiki_truyen/convert_html.dart';
 import 'package:tts_wikitruyen/services/wiki_truyen/service_wikitruyen.dart';
@@ -23,8 +24,29 @@ class HomeController extends GetxController {
 
   List<String> tagHistory = ['Hôm nay', 'Yêu Thích', 'Tác Giả Theo Dõi'];
   RxInt indexTagHistory = 0.obs;
+   RxList<Book> listHistory = <Book>[].obs;
   HomeController() {
     init();
+  }
+
+  void currenPageFct({required int indexPage}){
+    if(indexPage != currenPage.value)
+    {
+      
+      switch(indexPage){
+        case 0:
+        break;
+        case 1:
+    
+        break;
+        case 2:
+          listHistory.value =  HiveServices.getHistory();
+
+        break;
+      } 
+      currenPage.value = indexPage;
+    }
+    
   }
 
   init() async {

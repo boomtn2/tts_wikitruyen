@@ -52,7 +52,7 @@ class _HomePageState extends State<HomePage> {
         bottomNavigationBar: BottomNavigationBar(
             backgroundColor: Colors.black,
             onTap: (value) {
-              _controller.currenPage.value = value;
+              _controller.currenPageFct(indexPage: value);
             },
             currentIndex: _controller.currenPage.value,
             unselectedItemColor: Colors.white,

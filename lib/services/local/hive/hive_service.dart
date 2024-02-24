@@ -24,8 +24,9 @@ class HiveServices {
 
   static List<Book> getHistory() {
     List<Book> historys = [];
-    boxHistory.toMap().forEach((key, value) {});
-
+    boxHistory.toMap().forEach((key, value) {
+      historys.add(Book.json(value));
+    });
     return historys;
   }
 }
