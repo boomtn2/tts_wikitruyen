@@ -1,10 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:tts_wikitruyen/services/wiki_truyen/config.dart';
 
-//master 2
-//branch B2
-//rebase M1
-//master 4
 class Book {
   String imgPath;
   String bookPath;
@@ -15,6 +10,7 @@ class Book {
   String bookStar;
   String bookComment;
   History? history;
+  String BASE_URL = 'https://wikisach.net/';
   Book(
       {required this.imgPath,
       required this.bookPath,
@@ -24,16 +20,23 @@ class Book {
       required this.bookViews,
       required this.bookStar,
       required this.bookComment,
-      this.history
-      });
+      this.history});
 
   String get imgFullPath => BASE_URL + imgPath;
   String get bookFullPath => BASE_URL + bookPath;
-factory Book.json(Map<dynamic, dynamic> json){
-return Book(imgPath: json['imgPath'], bookPath: json['bookPath'], bookName: json['bookName'], bookAuthor: json['bookAuthor'], bookPublisher: json['bookPublisher'], bookViews: json['bookPublisher'], bookStar: json['bookPublisher'], bookComment: json['bookPublisher'],
-history: json['history'] == null ? null: History.json(json['history'])
-);
-}
+  factory Book.json(Map<dynamic, dynamic> json) {
+    return Book(
+        imgPath: json['imgPath'],
+        bookPath: json['bookPath'],
+        bookName: json['bookName'],
+        bookAuthor: json['bookAuthor'],
+        bookPublisher: json['bookPublisher'],
+        bookViews: json['bookPublisher'],
+        bookStar: json['bookPublisher'],
+        bookComment: json['bookPublisher'],
+        history:
+            json['history'] == null ? null : History.json(json['history']));
+  }
   Map<String, dynamic> toMap() {
     return {
       'imgPath': imgPath,
@@ -78,7 +81,11 @@ class History {
       'text': text,
     };
   }
-  factory History.json(Map<dynamic, dynamic> json){
-    return History(nameChapter: json['nameChapter'], chapterPath: json['chapterPath'], text: json['text']);
+
+  factory History.json(Map<dynamic, dynamic> json) {
+    return History(
+        nameChapter: json['nameChapter'],
+        chapterPath: json['chapterPath'],
+        text: json['text']);
   }
 }

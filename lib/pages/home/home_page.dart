@@ -4,6 +4,7 @@ import 'package:tts_wikitruyen/pages/home/home_controller.dart';
 import 'package:tts_wikitruyen/res/routers/app_router_name.dart';
 
 import '../../models/book.dart';
+import '../error/error_page.dart';
 import 'pages/i_history_page.dart';
 
 List<Widget> pages = [
@@ -24,47 +25,54 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Obx(
-      () => Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.black,
-          title: Text("AUDIO"),
-          actions: [
-            InkWell(
-              onTap: () => Get.toNamed(AppRoutesName.search),
-              child: Card(
-                child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Text(
-                    "Tìm Kiếm",
-                    style: TextStyle(color: Colors.black),
+      () => _controller.isError.value
+          ? ErrorPage(
+              error:
+                  _controller.errorNetWork?.description ?? 'Lỗi Không xác định',
+            )
+          : Scaffold(
+              appBar: AppBar(
+                backgroundColor: Colors.black,
+                title: const Text("AUDIO"),
+                actions: [
+                  InkWell(
+                    onTap: () => Get.toNamed(AppRoutesName.search),
+                    child: const Card(
+                      child: Row(mainAxisSize: MainAxisSize.min, children: [
+                        Text(
+                          "Tìm Kiếm",
+                          style: TextStyle(color: Colors.black),
+                        ),
+                        Icon(
+                          Icons.search,
+                          color: Colors.black,
+                          size: 30,
+                        ),
+                      ]),
+                    ),
                   ),
-                  Icon(
-                    Icons.search,
-                    color: Colors.black,
-                    size: 30,
-                  ),
-                ]),
+                ],
               ),
+              backgroundColor: Colors.black,
+              body: pages[_controller.currenPage.value],
+              bottomNavigationBar: BottomNavigationBar(
+                  backgroundColor: Colors.black,
+                  onTap: (value) {
+                    _controller.currenPageFct(indexPage: value);
+                  },
+                  currentIndex: _controller.currenPage.value,
+                  unselectedItemColor: Colors.white,
+                  selectedItemColor: Colors.red,
+                  items: const [
+                    BottomNavigationBarItem(
+                        icon: Icon(Icons.home), label: "Truyện"),
+                    BottomNavigationBarItem(
+                        icon: Icon(Icons.account_circle_outlined),
+                        label: "YouTube"),
+                    BottomNavigationBarItem(
+                        icon: Icon(Icons.favorite), label: "Lịch Sử"),
+                  ]),
             ),
-          ],
-        ),
-        backgroundColor: Colors.black,
-        body: pages[_controller.currenPage.value],
-        bottomNavigationBar: BottomNavigationBar(
-            backgroundColor: Colors.black,
-            onTap: (value) {
-              _controller.currenPageFct(indexPage: value);
-            },
-            currentIndex: _controller.currenPage.value,
-            unselectedItemColor: Colors.white,
-            selectedItemColor: Colors.red,
-            items: [
-              BottomNavigationBarItem(icon: Icon(Icons.home), label: "Truyện"),
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.account_circle_outlined), label: "YouTube"),
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.favorite), label: "Lịch Sử"),
-            ]),
-      ),
     );
   }
 }

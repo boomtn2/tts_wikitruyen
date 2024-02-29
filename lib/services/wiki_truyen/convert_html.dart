@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:tts_wikitruyen/services/wiki_truyen/config.dart';
+import 'package:tts_wikitruyen/services/wiki_truyen/path_wiki.dart';
 
 import '../../models/book.dart';
 import 'package:html/parser.dart' as htmlParser;
@@ -7,7 +7,11 @@ import 'package:html/dom.dart' as dom;
 
 import '../../models/bookinfor.dart';
 
-class ConvertHtml {
+abstract class BaseHtml {
+  String getChapter({required Response response});
+}
+
+class ConvertHtml extends BaseHtml {
   static List<Book> listBook({required Response response}) {
     List<Book> listBook = [];
     try {
@@ -106,27 +110,6 @@ class ConvertHtml {
     return BookInfo(theLoai: theLoai, moTa: moTa, dsChuong: []);
   }
 
-  static String getChapter({required Response response}) {
-    String chapter = '';
-
-    if (response.statusCode == 200) {
-      String htmlString = response.data;
-
-      // Phân tích cú pháp HTML
-      dom.Document document = htmlParser.parse(htmlString);
-      var info = document.querySelector('#bookContentBody');
-
-      // In ra nội dung của mỗi thẻ div có class là "book-item"
-
-      //lay link
-
-      if (info != null) {
-        chapter = info.text;
-      }
-    }
-    return chapter;
-  }
-
   static List<Map<String, String>> getListChapter(
       {required Response response}) {
     List<Map<String, String>> listChapter = [];
@@ -136,7 +119,8 @@ class ConvertHtml {
       // Phân tích cú pháp HTML
       dom.Document document = htmlParser.parse(htmlString);
       document.querySelectorAll('a.truncate').forEach((element) {
-        listChapter.add({element.text: element.attributes['href'] ?? ''});
+        String link = '${PathWiki.BASEURL_Wiki}${element.attributes['href']}';
+        listChapter.add({element.text: link});
       });
     }
 
@@ -159,5 +143,27 @@ class ConvertHtml {
     RegExp regex = RegExp(r'function fuzzySign[\s\S]*?}');
     Match? match = regex.firstMatch(html);
     return match?.group(0);
+  }
+
+  @override
+  String getChapter({required Response response}) {
+    String chapter = '';
+
+    if (response.statusCode == 200) {
+      String htmlString = response.data;
+
+      // Phân tích cú pháp HTML
+      dom.Document document = htmlParser.parse(htmlString);
+      var info = document.querySelector('#bookContentBody');
+
+      // In ra nội dung của mỗi thẻ div có class là "book-item"
+
+      //lay link
+
+      if (info != null) {
+        chapter = info.text;
+      }
+    }
+    return chapter;
   }
 }

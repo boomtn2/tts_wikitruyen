@@ -4,12 +4,13 @@ import 'package:tts_wikitruyen/models/bookinfor.dart';
 import 'package:tts_wikitruyen/pages/tts/tts_controller.dart';
 import 'package:tts_wikitruyen/res/routers/app_router_name.dart';
 import 'package:tts_wikitruyen/services/local/hive/hive_service.dart';
+import 'package:tts_wikitruyen/services/network/client_netword.dart';
+import 'package:tts_wikitruyen/services/network/network_excute.dart';
 
-import 'package:tts_wikitruyen/services/wiki_truyen/convert_html.dart';
-import 'package:tts_wikitruyen/services/wiki_truyen/service_wikitruyen.dart';
-import 'package:flutter_js/flutter_js.dart';
-import 'package:flutter/services.dart';
+import 'package:dio/dio.dart' as dio;
 import '../../models/book.dart';
+import '../../services/wiki_truyen/decore_wikitruyen.dart';
+import '../../services/wiki_truyen/path_wiki.dart';
 import '../tts/enum_state.dart';
 
 class BookInfoController extends GetxController {
@@ -19,20 +20,32 @@ class BookInfoController extends GetxController {
   Rx<StatusLoading> statusLoading = StatusLoading.LOADING.obs;
   RxList<Book> listBookSame = <Book>[].obs;
   String pathJS = "";
+  RxBool isLoadListChapter = false.obs;
   RxBool isLoadMore = false.obs;
-  final ServiceWikitruyen _serviceWikitruyen = ServiceWikitruyen();
   //tts
   ControllerTTS controllerTTS = ControllerTTS();
+  NetworkExecuter network = NetworkExecuter();
+  RxInt maxItemScroll = 20.obs;
 
   BookInfoController({required this.book}) {
     init();
   }
 
+  void loadMoreChapter() async {
+    isLoadListChapter.value = true;
+
+    await Future.delayed(Duration(seconds: 1));
+    bookInfo.value.dsChuong.length - maxItemScroll.value > 20
+        ? maxItemScroll.value += 20
+        : maxItemScroll.value = bookInfo.value.dsChuong.length;
+    isLoadListChapter.value = false;
+  }
+
   void init() async {
     statusLoading.value = StatusLoading.LOADING;
     nameBook.value = book.bookName;
-    pathJS = await rootBundle.loadString('assets/js/js_wikitruyen.js');
-    await getInfoBook();
+
+    await loadInfoBook();
     getListBookSame();
 
     controllerTTS.setInput(
@@ -45,22 +58,38 @@ class BookInfoController extends GetxController {
     statusLoading.value = StatusLoading.SUCCES;
   }
 
+  Future loadInfoBook() async {
+    WikiBaseClient wiki = WikiBaseClient();
+    wiki.url = book.bookPath;
+    final repo = await network.excute(router: wiki);
+    BookInfo _bookInfo;
+    if (repo is dio.Response) {
+      _bookInfo = DecoreWikiTruyen.getInfoBook(response: repo);
+      wiki = await DecoreWikiTruyen.getKeyChapters(reponseBookInfoNow: repo);
+
+      final repoListChapter = await network.excute(router: wiki);
+
+      if (repoListChapter is dio.Response) {
+        _bookInfo.dsChuong =
+            DecoreWikiTruyen.getListChapter(response: repoListChapter);
+        bookInfo.value = _bookInfo;
+      } else {}
+    } else {
+      handleError(error: repo);
+    }
+  }
+
+  void handleError({required Object error}) {
+    print(error);
+  }
+
   void setChapter({required Map<String, String> choose}) async {
-    int indexPath = getIndexChapterInList(choose: choose);
+    int indexPath = bookInfo.value.getIndexChapterInList(choose: choose);
     controllerTTS.loadNewChapter(indexPath: indexPath);
   }
 
-  int getIndexChapterInList({required Map<String, String> choose}) {
-    for (int i = 0; i < bookInfo.value.dsChuong.length; ++i) {
-      if (bookInfo.value.dsChuong[i] == choose) {
-        return i;
-      }
-    }
-    return 0;
-  }
-
   void nextToChapterPage({required Map<String, String> choose}) {
-    int indexChapter = getIndexChapterInList(choose: choose);
+    int indexChapter = bookInfo.value.getIndexChapterInList(choose: choose);
 
     Get.lazyPut(() => indexChapter, tag: 'index chapter');
     Get.lazyPut(() => bookInfo.value.dsChuong, tag: 'listChapter');
@@ -68,71 +97,42 @@ class BookInfoController extends GetxController {
   }
 
   void getListBookSame() async {
-    var response = await _serviceWikitruyen
-        .search(param: {'qs': 1, 'q': "${book.bookName}"});
-    listBookSame.addAll(ConvertHtml.listBook(response: response));
-  }
+    WikiBaseClient wiki = WikiBaseClient()
+      ..url = PathWiki.search
+      ..param = {'qs': 1, 'q': "${book.bookName}"};
+    final repo = await network.excute(router: wiki);
 
-  Future<void> getInfoBook() async {
-    //danh sach chuong
-    try {
-      var _reponse = await _serviceWikitruyen.request(path: book.bookPath);
-
-      BookInfo info = ConvertHtml.getBook(response: _reponse);
-      String funcJS = ConvertHtml.extractFuzzySign(_reponse.data) ?? '';
-      String bookId = ConvertHtml.extractIdBook(_reponse.data) ?? '';
-      String signKey = ConvertHtml.extractSignKey(_reponse.data) ?? '';
-      //key sign
-      print(funcJS);
-      String sign = await evalJS(fuzzySign: funcJS, signKey: signKey);
-
-      var _reponseChuong = await _serviceWikitruyen.loadChapter(
-          bookId: bookId, signKey: signKey, sign: sign);
-
-      info.dsChuong = ConvertHtml.getListChapter(response: _reponseChuong);
-      bookInfo.value = info;
-      statusLoading.value = StatusLoading.SUCCES;
-    } catch (e) {
-      print("error");
-      statusLoading.value = StatusLoading.ERROR;
+    if (repo is dio.Response) {
+      listBookSame.addAll(DecoreWikiTruyen.getListBook(response: repo));
+    } else {
+      handleError(error: repo);
     }
   }
 
-  Future<String> evalJS(
-      {required String fuzzySign,
-      required String signKey,
-      String start = '0',
-      String size = '501'}) async {
-    final JavascriptRuntime javascriptRuntime =
-        getJavascriptRuntime(forceJavascriptCoreOnAndroid: false);
-
-    String key = signKey + start + size;
-    JsEvalResult jsEvalResult =
-        javascriptRuntime.evaluate("""${fuzzySign} fuzzySign('${key}')""");
-
-    String keyFuzzySign = jsEvalResult.stringResult;
-    print(keyFuzzySign);
-    //key sign
-    jsEvalResult =
-        javascriptRuntime.evaluate("""${pathJS}a('${keyFuzzySign}')""");
-    return jsEvalResult.stringResult;
-  }
-
-  void saveHistoryBook(){
+  void saveHistoryBook() {
     print(book.bookName);
-    book.history = History(nameChapter: nameChapterNow(), chapterPath: chapterPath(), text: textChapterNow());
+    book.history = History(
+        nameChapter: nameChapterNow(),
+        chapterPath: chapterPath(),
+        text: textChapterNow());
     HiveServices.addHistory(book: book);
   }
 
-  String nameChapterNow(){  
+  String nameChapterNow() {
     return controllerTTS.titleNow.value;
   }
 
-  String textChapterNow(){
-    return controllerTTS.data[controllerTTS.index.value].substring(controllerTTS.end.value);
+  String textChapterNow() {
+    // return controllerTTS.data[controllerTTS.index.value]
+    //     .substring(controllerTTS.end.value);
+    return '';
   }
 
-   String chapterPath(){
+  String chapterPath() {
     return '';
+  }
+
+  RxMap getVoiceNow() {
+    return controllerTTS.voiceNow;
   }
 }

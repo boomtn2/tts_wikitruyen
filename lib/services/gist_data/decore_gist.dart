@@ -4,7 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:tts_wikitruyen/models/tag.dart';
 import 'package:tts_wikitruyen/models/tag_custom.dart';
 
-class ConverReponseGist {
+class DecoreGist {
   static List<Tag> listTags({required Response response}) {
     List<Tag> listTag = [];
     if (response.statusCode == 200) {

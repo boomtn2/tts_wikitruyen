@@ -1,7 +1,8 @@
 import 'package:get/get.dart';
-import 'package:tts_wikitruyen/services/local/hive/hive_service.dart';
-import '../../services/wiki_truyen/convert_html.dart';
-import '../../services/wiki_truyen/service_wikitruyen.dart';
+import 'package:tts_wikitruyen/services/network/client_netword.dart';
+import 'package:tts_wikitruyen/services/network/network.dart';
+import 'package:dio/dio.dart' as dio;
+import 'package:tts_wikitruyen/services/wiki_truyen/convert_html.dart';
 import 'enum_state.dart';
 import 'handler_tts.dart';
 
@@ -38,6 +39,8 @@ class ControllerTTS {
 
   bool isLoading = false;
 
+  BaseHtml convertHtml = ConvertHtml();
+  Client client = Client();
   void setInput(
       {required String text,
       required int indexLineTexts,
@@ -72,7 +75,7 @@ class ControllerTTS {
       this.index.value = index;
     };
     voiceList = _controllerHandlerTTS.getVoices();
-
+    voiceNow.value = voiceList.first;
     // set state play and auto playlist chapters
     _controllerHandlerTTS.playbackState.listen((value) {
       isPlay.value = value.playing;
@@ -82,6 +85,7 @@ class ControllerTTS {
           pathChapters.isNotEmpty &&
           isLoading == false) {
         autoPlayListChapter();
+        print('autoload');
         playTTS();
       }
     });
@@ -118,6 +122,15 @@ class ControllerTTS {
       _controllerHandlerTTS.completedPlayState();
       taiTruocText();
     }
+  }
+
+  int getIndexChapterInList({required Map<String, String> choose}) {
+    for (int i = 0; i < pathChapters.length; ++i) {
+      if (pathChapters[i] == choose) {
+        return i;
+      }
+    }
+    return 0;
   }
 
   List<String> getDataText() {
@@ -165,15 +178,23 @@ class ControllerTTS {
     return splitTextIntoSentences(data);
   }
 
-  //controller
   Future<String> loadChapter({required String path}) async {
-    var response = await ServiceWikitruyen().request(path: path);
-    if (response.statusCode != 200) {
+    client.url = path;
+    var response = await NetworkExecuter().excute(router: client);
+    String data = '';
+    if (response is dio.Response) {
+      if (response.statusCode != 200) {
+        autoLoading = false;
+        error.value = true;
+        messError = 'loadChapter Error: ${response.statusCode}';
+      }
+      data = convertHtml.getChapter(response: response);
+    } else {
       autoLoading = false;
       error.value = true;
-      messError = 'loadChapter Error: ${response.statusCode}';
+      messError = 'loadChapter Error: ${response}';
     }
-    String data = ConvertHtml.getChapter(response: response);
+
     return data;
   }
 

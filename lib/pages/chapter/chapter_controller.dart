@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:tts_wikitruyen/pages/tts/tts_controller.dart';
 import 'package:tts_wikitruyen/services/wiki_truyen/convert_html.dart';
-import 'package:tts_wikitruyen/services/wiki_truyen/service_wikitruyen.dart';
+import 'package:tts_wikitruyen/services/wiki_truyen/decore_wikitruyen.dart';
 
 import '../tts/enum_state.dart';
 
@@ -33,20 +33,20 @@ class ChapterController extends GetxController {
   String getNameChapter() => '${listChapter[indexChapter].keys}';
 
   void setChapter({required Map<String, String> choose}) async {
-    statusLoading.value = StatusLoading.LOADING;
-    indexChapter = getIndexChapterInList(choose: choose);
-    var response = await ServiceWikitruyen()
-        .request(path: listChapter[indexChapter].entries.first.value);
+    // statusLoading.value = StatusLoading.LOADING;
+    // indexChapter = getIndexChapterInList(choose: choose);
+    // var response = await ServiceWikitruyen()
+    //     .request(path: listChapter[indexChapter].entries.first.value);
 
-    controllerTTS.setInput(
-        pathChapters: listChapter,
-        text: ConvertHtml.getChapter(response: response),
-        indexPathChapters: indexChapter,
-        indexLineTexts: 0,
-        tilte: getNameChapter());
+    // controllerTTS.setInput(
+    //     pathChapters: listChapter,
+    //     text: ConvertHtml.getChapter(response: response),
+    //     indexPathChapters: indexChapter,
+    //     indexLineTexts: 0,
+    //     tilte: getNameChapter());
 
-    chapter.value = controllerTTS.getDataText();
-    statusLoading.value = StatusLoading.SUCCES;
+    // chapter.value = controllerTTS.getDataText();
+    // statusLoading.value = StatusLoading.SUCCES;
   }
 
   int getIndexChapterInList({required Map<String, String> choose}) {

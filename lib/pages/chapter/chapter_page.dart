@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tts_wikitruyen/pages/chapter/chapter_controller.dart';
+import 'package:tts_wikitruyen/pages/tts/widget_buttonTTS.dart';
 
-import '../info/widgets/bottomsheet_custom.dart';
+import '../widgets/bottomsheet_custom.dart';
 import '../tts/enum_state.dart';
 
 class ChapterPage extends StatefulWidget {
@@ -62,107 +63,18 @@ class _ChapterPageState extends State<ChapterPage> {
                         )),
               ),
             ),
-            SizedBox(
-              height: 60,
-            ),
+            
           ],
         ),
       ),
-      bottomSheet: Obx(
+ 
+      bottomNavigationBar: Obx(
         () => Visibility(
           visible: _controller.statusLoading.value == StatusLoading.SUCCES,
-          child: Card(
-            color: Colors.brown,
-            child: SizedBox(
-              height: 50,
-              child: Obx(
-                () => Row(
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        _controller.controllerTTS.isPlay.value
-                            ? _controller.controllerTTS.pauseTTS()
-                            : _controller.controllerTTS.playTTS();
-                      },
-                      child: Card(
-                          color: Colors.blue,
-                          child: Icon(
-                            _controller.controllerTTS.isPlay.value
-                                ? Icons.pause
-                                : Icons.play_arrow,
-                            size: 40,
-                          )),
-                    ),
-                    InkWell(
-                      onTap: () {
-                        Get.bottomSheet(bottomSheetChapter(
-                            indexChoose: _controller.controllerTTS.titleNow,
-                            data: _controller.listChapter,
-                            function: (e) {
-                              _controller.setChapter(choose: e);
-                            }));
-                      },
-                      child: SizedBox(
-                        width: Get.width / 3,
-                        child: Card(
-                          child: Center(
-                              child: Text(
-                                  "${_controller.controllerTTS.titleNow}")),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        onTap: () {
-                          Get.bottomSheet(bottomSheetCustom(
-                            data: _controller.controllerTTS.voiceList,
-                            function: (e) {
-                              _controller.controllerTTS.setVoice(voice: e);
-                            },
-                            indexChoose: _controller.controllerTTS.voiceNow,
-                          ));
-                        },
-                        child: Card(
-                          child: Center(child: Text("Voice")),
-                        ),
-                      ),
-                    ),
-                    InkWell(
-                      onTap: () {
-                        Get.bottomSheet(bottomSheetCustom(
-                          data: _controller.controllerTTS.speedData,
-                          function: (e) {
-                            _controller.controllerTTS
-                                .setSpeedRate(speedRate: e);
-                          },
-                          indexChoose: 0.5,
-                        ));
-                      },
-                      child: Card(
-                          child: SizedBox(
-                              width: 40,
-                              height: 40,
-                              child: Center(
-                                  child: Text(
-                                      " X ${_controller.controllerTTS.speedNow} ")))),
-                    ),
-                    InkWell(
-                      onTap: () {
-                        _controller.controllerTTS.skipTTS();
-                      },
-                      child: Card(
-                          child: Icon(
-                        Icons.skip_next,
-                        size: 40,
-                      )),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          child: ButtonsTTS()
         ),
       ),
+      
     );
   }
 }

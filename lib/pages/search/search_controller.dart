@@ -1,14 +1,14 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tts_wikitruyen/models/tag.dart';
-import 'package:tts_wikitruyen/services/gist_data/convert_reponse_gist.dart';
-import 'package:tts_wikitruyen/services/gist_data/service_gist.dart';
-
+import 'package:tts_wikitruyen/services/gist_data/decore_gist.dart';
+import 'package:tts_wikitruyen/services/gist_data/strings_link_connection.dart';
+import 'package:tts_wikitruyen/services/network/client_netword.dart';
+import 'package:tts_wikitruyen/services/network/network_excute.dart';
+import 'package:tts_wikitruyen/services/wiki_truyen/decore_wikitruyen.dart';
+import 'package:tts_wikitruyen/services/wiki_truyen/path_wiki.dart';
+import 'package:dio/dio.dart' as dio;
 import '../../models/book.dart';
-import '../../services/wiki_truyen/convert_html.dart';
-import '../../services/wiki_truyen/service_wikitruyen.dart';
 
 class SearchPageController extends GetxController {
   SearchPageController() {
@@ -20,15 +20,19 @@ class SearchPageController extends GetxController {
   RxList<Tag> listTags = <Tag>[].obs;
   RxBool isLoading = false.obs;
   RxBool isLoadMore = false.obs;
-  final ServiceWikitruyen _serviceWikitruyen = ServiceWikitruyen();
 
   Map<String, dynamic> querry = {};
-
+  NetworkExecuter network = NetworkExecuter();
   int start = 0;
   void init() async {
-    var response = await ServiceGist().getCategory();
-
-    listTags.value = ConverReponseGist.listTags(response: response);
+    Client client = Client();
+    client.baseURLClient = StringLinkConnection.category;
+    var response = await network.excute(router: client);
+    if (response is dio.Response) {
+      listTags.value = DecoreGist.listTags(response: response);
+    } else {
+      handleError(error: response);
+    }
   }
 
   void selectTag(
@@ -42,13 +46,37 @@ class SearchPageController extends GetxController {
     }
   }
 
+  WikiBaseClient wiki = WikiBaseClient();
   void loadMoreItems() async {
     isLoadMore.value = true;
     querry['start'] = '${start += 20}';
-    var response = await _serviceWikitruyen.search(param: querry);
 
-    listBooks.addAll(ConvertHtml.listBook(response: response));
-    isLoadMore.value = false;
+    wiki.url = PathWiki.search;
+    wiki.param = querry;
+    var response = await network.excute(router: wiki);
+
+    if (response is dio.Response) {
+      listBooks.addAll(DecoreWikiTruyen.getListBook(response: response));
+      isLoadMore.value = false;
+    }
+  }
+
+  void searchName() async {
+    if (controllerTextSearchName.value != '') {
+      wiki.url = PathWiki.search;
+      wiki.param = {'qs': 1, 'q': "${controllerTextSearchName.value}"};
+      final repo = await network.excute(router: wiki);
+
+      if (repo is dio.Response) {
+        listBooks.value = DecoreWikiTruyen.getListBook(response: repo);
+      } else {
+        handleError(error: repo);
+      }
+    }
+  }
+
+  void handleError({required Object error}) {
+    print(error);
   }
 
   void searchCategory() async {
@@ -67,8 +95,13 @@ class SearchPageController extends GetxController {
     start = 0;
     querry.addAll({'qs': 1, 'm': 2, 'start': 0, 'so': 4, 'y': 2024});
 
-    var response = await _serviceWikitruyen.search(param: querry);
-    listBooks.value = [];
-    listBooks.addAll(ConvertHtml.listBook(response: response));
+    wiki.url = PathWiki.search;
+    wiki.param = querry;
+    var response = await network.excute(router: wiki);
+
+    if (response is dio.Response) {
+      listBooks.value = DecoreWikiTruyen.getListBook(response: response);
+      isLoadMore.value = false;
+    }
   }
 }

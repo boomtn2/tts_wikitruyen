@@ -16,4 +16,13 @@ class BookInfo {
   toMap() {
     return '{theLoai: $theLoai, moTa: $moTa, dsChuong: $dsChuong}';
   }
+
+    int getIndexChapterInList({required Map<String, String> choose}) {
+    for (int i = 0; i <  dsChuong.length; ++i) {
+      if ( dsChuong[i] == choose) {
+        return i;
+      }
+    }
+    return 0;
+  }
 }
