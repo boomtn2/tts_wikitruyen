@@ -1,17 +1,30 @@
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
+import 'package:tts_wikitruyen/pages/error/error_page.dart';
+
 import 'package:tts_wikitruyen/pages/info/book_info_controller.dart';
-import 'package:tts_wikitruyen/pages/widgets/bottomsheet_custom.dart';
+import 'package:tts_wikitruyen/pages/widgets/image_networkcustom.dart';
+
+import 'package:tts_wikitruyen/pages/widgets/itembooklist.dart';
+import 'package:tts_wikitruyen/res/const_app.dart';
 
 import '../../models/book.dart';
 import '../tts/enum_state.dart';
 import '../tts/widget_buttonTTS.dart';
-import '../widgets/cricle_load.dart';
+
+import '../widgets/desciption_widget.dart';
+import '../widgets/loading_widget.dart';
 
 class BookInfoPage extends StatefulWidget {
-  BookInfoPage({super.key});
-
+  const BookInfoPage({
+    Key? key,
+    required this.imgTag,
+    required this.titleTag,
+    required this.authorTag,
+  }) : super(key: key);
+  final String imgTag;
+  final String titleTag;
+  final String authorTag;
   @override
   State<BookInfoPage> createState() => _BookInfoPageState();
 }
@@ -22,7 +35,6 @@ class _BookInfoPageState extends State<BookInfoPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _scrollController.addListener(_onScroll);
   }
@@ -38,8 +50,9 @@ class _BookInfoPageState extends State<BookInfoPage> {
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.offset;
     if (currentScroll >= (maxScroll * 0.9)) {
-      if (_controller.isLoadListChapter.value == false)
+      if (_controller.isLoadListChapter.value == false) {
         _controller.loadMoreChapter();
+      }
     }
   }
 
@@ -47,128 +60,78 @@ class _BookInfoPageState extends State<BookInfoPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text(_controller.nameBook.value),
+          actions: [
+            const Icon(Icons.favorite),
+            const Icon(Icons.download),
+            InkWell(
+                onTap: () {
+                  Get.changeThemeMode(ThemeMode.dark);
+                },
+                child: const Icon(Icons.settings)),
+          ],
         ),
-        body: Obx(
-          () => ListView(
-            controller: _scrollController,
-            children: [
-              Card(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(
-                      width: Get.width / 4,
-                      height: Get.height / 6,
-                      child: Image.network(
-                        _controller.book.imgFullPath,
-                        errorBuilder: (context, error, stackTrace) =>
-                            SizedBox(),
+        body: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Obx(
+            () => _controller.isError.value
+                ? ErrorPage(
+                    error: _controller.messError,
+                    reload: () {
+                      _controller.init();
+                    })
+                : ListView(
+                    controller: _scrollController,
+                    children: [
+                      const _Divider(),
+                      _BookDescriptionSection(
+                        authorTag: widget.authorTag,
+                        imgTag: widget.imgTag,
+                        titleTag: widget.titleTag,
+                        book: _controller.book,
                       ),
-                    ),
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.max,
-                        children: [
-                          RichText(
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            text: TextSpan(
-                              style: TextStyle(color: Colors.black),
-                              text: 'Tác giả: ',
-                              children: [
-                                TextSpan(
-                                    text: '${_controller.book.bookAuthor}',
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.red)),
-                              ],
-                            ),
-                          ),
-                          RichText(
-                            maxLines: 4,
-                            overflow: TextOverflow.ellipsis,
-                            text: TextSpan(
-                              style: TextStyle(color: Colors.black),
-                              text: 'Thể loại: ',
-                              children: _controller.bookInfo.value.theLoai
-                                  .map((e) => TextSpan(
-                                      text: '${e.keys},',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.blue)))
-                                  .toList(),
-                            ),
-                          )
-                        ],
+                      const _Divider(),
+                      const _SectionTitle(title: 'Mô tả:'),
+                      DescriptionTextWidget(
+                          text: _controller.bookInfo.value.moTa),
+                      const _SectionTitle(title: 'Truyện Tương Tự:'),
+                      ItemListBookSame(),
+                      const _Divider(),
+                      const _SectionTitle(title: 'Chương:'),
+                      ListChapters(),
+                      _controller.isLoadListChapter.value
+                          ? const LoadingWidget()
+                          : Container(),
+                      const SizedBox(
+                        height: 80,
                       ),
-                    )
-                  ],
-                ),
-              ),
-              Mota(),
-              ItemListBookSame(),
-              ListChapters(),
-              _controller.isLoadListChapter.value ? CricleLoad() : Container(),
-              SizedBox(
-                height: 80,
-              ),
-            ],
+                    ],
+                  ),
           ),
         ),
         bottomSheet: Obx(() => Visibility(
-            visible: _controller.statusLoading.value == StatusLoading.SUCCES,
+            visible: _controller.statusLoading.value == StatusLoading.succes,
             child: ButtonsTTS())));
   }
 }
 
-class Mota extends StatelessWidget {
-  Mota({super.key});
-  final _controller = Get.find<BookInfoController>();
+class _SectionTitle extends StatelessWidget {
+  final String title;
+
+  const _SectionTitle({required this.title});
+
   @override
   Widget build(BuildContext context) {
-    return Obx(
-      () => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _controller.statusLoading.value == StatusLoading.LOADING
-              ? Center(child: CircularProgressIndicator())
-              : Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    children: [
-                      Text("Văn án:"),
-                      _controller.isLoadMore.value
-                          ? Text(
-                              "${_controller.bookInfo.value.moTa}",
-                            )
-                          : Text(
-                              "${_controller.bookInfo.value.moTa}",
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                      InkWell(
-                        onTap: () {
-                          _controller.isLoadMore.value =
-                              !_controller.isLoadMore.value;
-                        },
-                        child: Text(
-                          _controller.isLoadMore.value
-                              ? "<Thu Nhỏ>"
-                              : "Xem Thêm >>",
-                          style: TextStyle(
-                              color: Colors.blue,
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-        ],
-      ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: <Widget>[
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 20.0,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -186,7 +149,14 @@ class ItemListBookSame extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               itemCount: _controller.listBookSame.length,
               itemBuilder: (context, index) {
-                return ItemBook(book: _controller.listBookSame[index]);
+                return BookListItem(
+                  book: _controller.listBookSame[index],
+                  funtionOption: () {
+                    _controller.book = _controller.listBookSame[index];
+                    _controller.init();
+                  },
+                  optionFull: false,
+                );
               }),
         ),
       ),
@@ -202,9 +172,6 @@ class ListChapters extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.max,
       children: [
-        ListTile(
-          title: Text("DANH SÁCH CHƯƠNG:"),
-        ),
         Obx(
           () => Card(
             child: Padding(
@@ -223,7 +190,6 @@ class ListChapters extends StatelessWidget {
                           choose: _controller.bookInfo.value.dsChuong[i]);
                     },
                     child: Card(
-                      color: Colors.green,
                       child: ListTile(
                         title: Text(
                             "${_controller.bookInfo.value.dsChuong[i].keys}"),
@@ -239,81 +205,126 @@ class ListChapters extends StatelessWidget {
   }
 }
 
-class ItemBook extends StatelessWidget {
-  const ItemBook({super.key, required this.book});
+class _BookDescriptionSection extends StatelessWidget {
+  final String imgTag;
+  final String titleTag;
+  final String authorTag;
   final Book book;
+  const _BookDescriptionSection(
+      {required this.imgTag,
+      required this.titleTag,
+      required this.authorTag,
+      required this.book});
+
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        final controller = Get.find<BookInfoController>();
-        controller.book = book;
-        controller.init();
-      },
-      child: Card(
-        color: Color.fromARGB(255, 228, 225, 225),
-        child: Padding(
-          padding: const EdgeInsets.all(2.0),
-          child: SizedBox(
-            height: 170,
-            width: Get.size.width / 1.5,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      image: DecorationImage(
-                        image: NetworkImage(
-                          book.imgFullPath,
-                        ),
-                        fit: BoxFit.fill,
-                        onError: (exception, stackTrace) {},
-                      )),
-                  width: Get.size.width / 4,
-                ),
-                SizedBox(
-                  width: 5,
-                ),
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${book.bookName}',
-                        style: TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.bold),
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Text(
-                        '${book.bookAuthor}',
-                        style: TextStyle(
-                            color: Colors.red,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      SizedBox(
-                        height: 30,
-                        child: Text(
-                          '🙄${book.bookViews} 👑${book.bookStar} 💬${book.bookComment}',
-                          style: TextStyle(fontSize: 15),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Hero(
+            tag: imgTag,
+            child: ImageNetWorkCustom(
+              link: book.imgPath,
+              pathAssetImg: pathAssetsError,
+              widgetLoading: const LoadingWidget(
+                isImage: true,
+              ),
+              height: 200,
+              width: 130,
+            )),
+        const SizedBox(width: 20.0),
+        Flexible(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              const SizedBox(height: 5.0),
+              Hero(
+                tag: titleTag,
+                child: Material(
+                  type: MaterialType.transparency,
+                  child: Text(
+                    book.bookName,
+                    style: const TextStyle(
+                      fontSize: 20.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 3,
                   ),
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 5.0),
+              Hero(
+                tag: authorTag,
+                child: Material(
+                  type: MaterialType.transparency,
+                  child: Text(
+                    book.bookAuthor,
+                    style: const TextStyle(
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 5.0),
+              _CategoryChips(),
+            ],
           ),
         ),
+      ],
+    );
+  }
+}
+
+class _CategoryChips extends StatelessWidget {
+  _CategoryChips();
+  final BookInfoController _controller = Get.find<BookInfoController>();
+  @override
+  Widget build(BuildContext context) {
+    return Obx(
+      () => Wrap(
+        children: [
+          ..._controller.bookInfo.value.theLoai.map((category) {
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(0.0, 5.0, 5.0, 5.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  borderRadius: const BorderRadius.all(Radius.circular(20)),
+                  border: Border.all(
+                    color: context.theme.colorScheme.secondary,
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7.0,
+                    vertical: 5,
+                  ),
+                  child: Text(
+                    category.entries.first.key,
+                    style: TextStyle(
+                      color: context.theme.colorScheme.secondary,
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }),
+        ],
       ),
     );
+  }
+}
+
+class _Divider extends StatelessWidget {
+  const _Divider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Divider(color: context.theme.textTheme.bodySmall!.color);
   }
 }

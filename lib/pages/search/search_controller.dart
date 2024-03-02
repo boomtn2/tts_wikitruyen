@@ -39,7 +39,7 @@ class SearchPageController extends GetxController {
       {required String name, required String param, required String querry}) {
     if (listTagSelected[name] == null) {
       listTagSelected.addAll({
-        '$name': {'param': param, 'querry': querry}
+        name: {'param': param, 'querry': querry}
       });
     } else {
       listTagSelected.remove(name);
@@ -62,7 +62,7 @@ class SearchPageController extends GetxController {
   }
 
   void searchName() async {
-    if (controllerTextSearchName.value != '') {
+    if (controllerTextSearchName.value.text.isNotEmpty) {
       wiki.url = PathWiki.search;
       wiki.param = {'qs': 1, 'q': "${controllerTextSearchName.value}"};
       final repo = await network.excute(router: wiki);
@@ -75,9 +75,7 @@ class SearchPageController extends GetxController {
     }
   }
 
-  void handleError({required Object error}) {
-    print(error);
-  }
+  void handleError({required Object error}) {}
 
   void searchCategory() async {
     for (var element in listTagSelected.values) {

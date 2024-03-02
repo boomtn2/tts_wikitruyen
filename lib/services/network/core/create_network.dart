@@ -6,7 +6,7 @@ import 'error_interceptor.dart';
 import '../untils/untils.dart';
 
 class NetworkCreate {
-  Dio _client = Dio();
+  final Dio _client = Dio();
   Future<Object> request({required BaseClientGenerator route}) async {
     _client.interceptors.add(ErrorInterceptor());
     try {

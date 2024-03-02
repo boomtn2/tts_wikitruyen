@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:tts_wikitruyen/services/wiki_truyen/path_wiki.dart';
 
 import '../../models/book.dart';
@@ -24,10 +25,10 @@ class ConvertHtml extends BaseHtml {
         // In ra nội dung của mỗi thẻ div có class là "book-item"
         for (var item in bookItems) {
           //lay link
-          String img = '';
+          String img = PathWiki.BASEURL_Wiki;
           var temp = item.querySelector('img');
           if (temp != null) {
-            img = temp.attributes['src'] ?? '';
+            img += temp.attributes['src'] ?? '';
           }
 
           String bookAuthor = '';
@@ -54,7 +55,7 @@ class ConvertHtml extends BaseHtml {
           String bookComment = '';
           String bookStar = '';
           var listItem = item.querySelectorAll('span.book-stats');
-          listItem.forEach((element) {
+          for (var element in listItem) {
             String text = element.text;
             if (text.contains('visibility')) {
               bookViews = text.replaceAll('visibility', '');
@@ -63,7 +64,7 @@ class ConvertHtml extends BaseHtml {
             } else {
               bookComment = text;
             }
-          });
+          }
 
           listBook.add(Book(
               imgPath: img,
@@ -77,7 +78,9 @@ class ConvertHtml extends BaseHtml {
         }
       } else {}
     } catch (e) {
-      print("lõi${e}");
+      if (kDebugMode) {
+        print("lõi$e");
+      }
     }
     return listBook;
   }

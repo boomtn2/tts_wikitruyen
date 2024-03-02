@@ -3,34 +3,28 @@
 import 'package:tts_wikitruyen/services/wiki_truyen/path_wiki.dart';
 
 class WikiBaseClient extends BaseClientGenerator {
-  String _baseURL = PathWiki.BASEURL_Wiki;
+  final String _baseURL = PathWiki.BASEURL_Wiki;
   String url = '';
   String methodWiki = "Get";
-  Map<String, dynamic>? param = null;
-  Map<String, dynamic>? headerWiki = null;
-  dynamic bodyWiki = null;
+  Map<String, dynamic>? param;
+  Map<String, dynamic>? headerWiki;
+  dynamic bodyWiki;
   @override
-  // TODO: implement baseURL
   String get baseURL => _baseURL;
 
   @override
-  // TODO: implement body
   get body => bodyWiki;
 
   @override
-  // TODO: implement header
   Map<String, dynamic>? get header => headerWiki;
 
   @override
-  // TODO: implement method
   String get method => methodWiki;
 
   @override
-  // TODO: implement path
   String get path => url;
 
   @override
-  // TODO: implement queryParameters
   Map<String, dynamic>? get queryParameters => param;
 }
 
@@ -38,32 +32,26 @@ class Client extends BaseClientGenerator {
   String baseURLClient = '';
   String url = '';
   String methodWiki = "Get";
-  Map<String, dynamic>? param = null;
-  Map<String, dynamic>? headerWiki = null;
-  dynamic bodyWiki = null;
+  Map<String, dynamic>? param;
+  Map<String, dynamic>? headerWiki;
+  dynamic bodyWiki;
 
   @override
-  // TODO: implement baseURL
   String get baseURL => baseURLClient;
 
   @override
-  // TODO: implement body
   get body => bodyWiki;
 
   @override
-  // TODO: implement header
   Map<String, dynamic>? get header => headerWiki;
 
   @override
-  // TODO: implement method
   String get method => methodWiki;
 
   @override
-  // TODO: implement path
   String get path => url;
 
   @override
-  // TODO: implement queryParameters
   Map<String, dynamic>? get queryParameters => param;
 }
 

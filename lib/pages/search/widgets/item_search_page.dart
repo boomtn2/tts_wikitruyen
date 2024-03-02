@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../search_controller.dart';
+import 'widget_tags_slectected.dart';
 
 class ItemSearchPage extends StatelessWidget {
   ItemSearchPage({super.key});
@@ -12,7 +13,7 @@ class ItemSearchPage extends StatelessWidget {
       () => ListView(
         children: [
           Padding(
-            padding: EdgeInsets.all(8),
+            padding: const EdgeInsets.all(8),
             child: Row(
               children: [
                 Expanded(
@@ -24,7 +25,7 @@ class ItemSearchPage extends StatelessWidget {
                         onPressed: () {
                           _controller.controllerTextSearchName.text = '';
                         },
-                        icon: Icon(Icons.close),
+                        icon: const Icon(Icons.close),
                         color: Colors.red,
                       ),
                       border: OutlineInputBorder(
@@ -38,48 +39,19 @@ class ItemSearchPage extends StatelessWidget {
                     DefaultTabController.of(context).animateTo(1);
                   },
                   child: Container(
-                    padding: EdgeInsets.all(2),
+                    padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(2),
                       color: Colors.blue,
                     ),
                     height: 55,
-                    child: Center(child: Text('Tìm Kiếm')),
+                    child: const Center(child: Text('Tìm Kiếm')),
                   ),
                 ),
               ],
             ),
           ),
-          Wrap(
-            children: _controller.listTagSelected.entries
-                .map((e) => InkWell(
-                      onTap: () {
-                        _controller.listTagSelected.remove(e.key);
-                      },
-                      child: Card(
-                        color: Colors.black12,
-                        child: Padding(
-                          padding: const EdgeInsets.all(5.0),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.close,
-                                size: 15,
-                                color: Colors.red,
-                              ),
-                              Text(
-                                '${e.key}',
-                                style: TextStyle(
-                                    color: Colors.black, fontSize: 12),
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                    ))
-                .toList(),
-          ),
+          TagsSelected(),
           ElevatedButton(
               style: ButtonStyle(
                 backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
@@ -88,7 +60,7 @@ class ItemSearchPage extends StatelessWidget {
                 _controller.searchCategory();
                 DefaultTabController.of(context).animateTo(1);
               },
-              child: Text(
+              child: const Text(
                 "Tìm Kiếm Thể loại",
                 style:
                     TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -101,35 +73,43 @@ class ItemSearchPage extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         ListTile(
-                          title: Text('${e2.nameTag}'),
+                          title: Text(e2.nameTag),
                         ),
                         Wrap(
                             children: e2.tags.entries
                                 .map((e) => e.key == 'name'
-                                    ? SizedBox()
-                                    : ElevatedButton(
-                                        style: _controller
-                                                    .listTagSelected[e.key] !=
-                                                null
-                                            ? ElevatedButton.styleFrom(
-                                                backgroundColor: Colors.red,
-                                              )
-                                            : ElevatedButton.styleFrom(
-                                                backgroundColor: Colors.white,
-                                              ),
-                                        onPressed: () {
-                                          _controller.selectTag(
-                                              name: e.key,
-                                              param: e.value,
-                                              querry: '${e2.tags['name']}');
-                                        },
-                                        child: Text('${e.key}')))
+                                    ? const SizedBox.shrink()
+                                    : Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: ElevatedButton(
+                                            style: _controller.listTagSelected[
+                                                        e.key] !=
+                                                    null
+                                                ? ElevatedButton.styleFrom(
+                                                    backgroundColor: Colors.red,
+                                                  )
+                                                : ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        Colors.white,
+                                                  ),
+                                            onPressed: () {
+                                              _controller.selectTag(
+                                                  name: e.key,
+                                                  param: e.value,
+                                                  querry: '${e2.tags['name']}');
+                                            },
+                                            child: Text(
+                                              e.key,
+                                              style: const TextStyle(
+                                                  color: Colors.black),
+                                            )),
+                                      ))
                                 .toList()),
                       ],
                     ),
                   )
                   .toList()),
-          SizedBox(
+          const SizedBox(
             height: 70,
           ),
         ],

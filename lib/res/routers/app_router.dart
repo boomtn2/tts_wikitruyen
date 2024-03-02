@@ -15,22 +15,26 @@ class AppRoutes {
   static final page = [
     GetPage(
       name: AppRoutesName.home,
-      page: () => HomePage(),
+      page: () => const HomePage(),
       binding: Homebinding(),
     ),
     GetPage(
       name: AppRoutesName.search,
-      page: () => SearchPage(),
+      page: () => const SearchPage(),
       binding: SearchBinding(),
     ),
     GetPage(
       name: AppRoutesName.bookInfo,
-      page: () => BookInfoPage(),
+      page: () => BookInfoPage(
+        authorTag: Get.find<String>(tag: 'authorTag'),
+        imgTag: Get.find<String>(tag: 'imgTag'),
+        titleTag: Get.find<String>(tag: 'titleTag'),
+      ),
       binding: BookInfoBiding(),
     ),
     GetPage(
       name: AppRoutesName.chapter,
-      page: () => ChapterPage(),
+      page: () => const ChapterPage(),
       binding: ChapterBinding(),
     ),
   ];

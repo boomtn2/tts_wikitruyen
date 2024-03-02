@@ -3,14 +3,14 @@ import 'package:get/get.dart';
 import '../../models/book.dart';
 
 class ItemBook extends StatelessWidget {
-  ItemBook(
+  const ItemBook(
       {super.key,
       required this.book,
       required this.nexToPage,
       this.someThings});
   final Book book;
-  Function nexToPage;
-  Function? someThings;
+  final Function nexToPage;
+  final Function? someThings;
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -18,7 +18,7 @@ class ItemBook extends StatelessWidget {
         nexToPage();
       },
       child: Card(
-        color: Color.fromARGB(255, 228, 225, 225),
+        color: const Color.fromARGB(255, 228, 225, 225),
         child: Padding(
           padding: const EdgeInsets.all(2.0),
           child: SizedBox(
@@ -39,7 +39,7 @@ class ItemBook extends StatelessWidget {
                       )),
                   width: Get.size.width / 3,
                 ),
-                SizedBox(
+                const SizedBox(
                   width: 5,
                 ),
                 Expanded(
@@ -49,15 +49,15 @@ class ItemBook extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${book.bookName}',
-                        style: TextStyle(
+                        book.bookName,
+                        style: const TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold),
                         maxLines: 3,
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                        '${book.bookAuthor}',
-                        style: TextStyle(
+                        book.bookAuthor,
+                        style: const TextStyle(
                             color: Colors.red,
                             fontWeight: FontWeight.bold,
                             fontSize: 15),
@@ -68,7 +68,7 @@ class ItemBook extends StatelessWidget {
                         height: 30,
                         child: Text(
                           '🫨${book.bookViews} 👑${book.bookStar} 💬${book.bookComment}',
-                          style: TextStyle(fontSize: 15),
+                          style: const TextStyle(fontSize: 15),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),

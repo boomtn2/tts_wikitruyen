@@ -1,5 +1,7 @@
+// ignore_for_file: unused_field
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
+import 'package:flutter/foundation.dart';
 
 import 'package:flutter_tts/flutter_tts.dart';
 
@@ -7,44 +9,59 @@ import 'enum_state.dart';
 
 class HandlerTTS extends BaseAudioHandler {
   HandlerTTS() {
-    init();
+    _initTTS();
   }
-  final FlutterTts _tTS = FlutterTts();
-  List<String> _texts = [];
+  final FlutterTts _controllerTTS = FlutterTts();
+
+  String? _messError;
+  TtsStatus _ttsStatus = TtsStatus.unknown;
+  List<String>? _listText;
+  double _speech = 0.5;
+  Map<dynamic, dynamic>? _voiceNow;
+  List<Map<dynamic, dynamic>>? _listVoices;
+  int? _maxSpeechInputLength;
+
+  Function(String text, int start, int end, String word, int index)
+      progressSpeak = (text, start, end, word, index) {};
+
   int _indexListTexts = 0;
   int _indexPause = 0;
-  TtsState _ttsState = TtsState.stopped;
-  List<Map<dynamic, dynamic>> _listVoices = [];
 
-  Function progress =
-      (String text, int start, int end, String word, int index) {};
+  String? messError() => _messError;
+  TtsStatus ttsStatus() => _ttsStatus;
+  List<String>? listText() => _listText;
+  double speech() => _speech;
+  Map<dynamic, dynamic>? voiceNow() => _voiceNow;
+  List<Map<dynamic, dynamic>>? listVoices() => _listVoices;
+  int? maxSpeechInputLength() => _maxSpeechInputLength;
+  int indexListTexts() => _indexListTexts;
 
-  String locale = 'vi';
-  double _speechTTS = 0.5;
-  Map<dynamic, dynamic> _voiceInstall = {};
-  int _indextContineus = 0;
-  bool hasInitialized = false;
+  void _handleErrorTTS({required String error}) {
+    _setTtsStatus(status: TtsStatus.error);
+    _messError = error;
 
-  void init() async {
-    print('inint handler AUdio Service TTS');
-    if (hasInitialized == false) {
-      inintIndexMaxSpeech();
-      if (_listVoices.isEmpty) {
-        _listVoices = await _getVoicesVI_EN();
-      }
-
-      if (_listVoices.isNotEmpty) {
-        setVoice(voice: _listVoices.first);
-      }
-
-      setSpeech(_speechTTS);
-      _handlerTTS();
-      _interrupSessionAudio();
-      hasInitialized = true;
-    }
+    if (kDebugMode) print(error);
   }
 
-  bool isPauseInterrup = false;
+  int _indextContineus = 0;
+
+  void _initTTS() async {
+    _setTtsStatus(status: TtsStatus.start);
+    _listVoices = await _getVoicesVI_EN();
+
+    if (_listVoices != null) {
+      if (_listVoices!.isNotEmpty) {
+        setVoice(voice: _listVoices!.first);
+      }
+    }
+    _maxSpeechInputLength = await _controllerTTS.getMaxSpeechInputLength;
+
+    setSpeech(_speech);
+    _handlerTTS();
+    _interrupSessionAudio();
+  }
+
+  bool _isPauseInterrup = false;
   void _interrupSessionAudio() async {
     final session = await AudioSession.instance;
     session.interruptionEventStream.listen((event) {
@@ -52,30 +69,30 @@ class HandlerTTS extends BaseAudioHandler {
         switch (event.type) {
           case AudioInterruptionType.duck:
             pause();
-            isPauseInterrup = true;
+            _isPauseInterrup = true;
             break;
           case AudioInterruptionType.pause:
             pause();
-            isPauseInterrup = true;
+            _isPauseInterrup = true;
             break;
           case AudioInterruptionType.unknown:
             pause();
-            isPauseInterrup = true;
+            _isPauseInterrup = true;
             break;
         }
       } else {
         switch (event.type) {
           case AudioInterruptionType.duck:
-            if (_ttsState == TtsState.paused && isPauseInterrup) {
+            if (_ttsStatus == TtsStatus.paused && _isPauseInterrup) {
               play();
-              isPauseInterrup = false;
+              _isPauseInterrup = false;
             }
 
             break;
           case AudioInterruptionType.pause:
-            if (_ttsState == TtsState.paused && isPauseInterrup) {
+            if (_ttsStatus == TtsStatus.paused && _isPauseInterrup) {
               play();
-              isPauseInterrup = false;
+              _isPauseInterrup = false;
             }
           case AudioInterruptionType.unknown:
             stop();
@@ -98,122 +115,152 @@ class HandlerTTS extends BaseAudioHandler {
     setTitle(title, title);
 
     //init tts
-    _texts = texts;
+    _listText = texts;
     _indexListTexts = 0;
+    _indexPause = 0;
+    _indextContineus = 0;
+
+    _setTtsStatus(status: TtsStatus.start);
   }
 
   void setTitle(String id, String title) {
     mediaItem.add(MediaItem(id: id, title: title));
   }
 
-  Future<dynamic> setVoice({required Map<dynamic, dynamic> voice}) async {
+  Future<void> setVoice({required Map<dynamic, dynamic> voice}) async {
     // 1 true 0 flase
-    var flag =
-        await _tTS.setVoice({"name": voice["name"], "locale": voice["locale"]});
+    var flag = await _controllerTTS
+        .setVoice({"name": voice["name"], "locale": voice["locale"]});
     if (flag == 1) {
-      _voiceInstall = voice;
+      _voiceNow = voice;
+    } else {
+      _handleErrorTTS(error: 'Lỗi cài đặt giọng: {$voice}');
     }
-    return flag;
   }
 
-  Future<dynamic> setSpeech(double speech) {
-    _speechTTS = speech;
-    return _tTS.setSpeechRate(speech);
+  Future<void> setSpeech(double speech) async {
+    final repo = await _controllerTTS.setSpeechRate(speech);
+    if (repo == 1) {
+      _speech = speech;
+    } else {
+      _handleErrorTTS(
+          error: 'Lỗi cài đặt tốc độ: {$speech} tốc độ hiện tại là {$_speech}');
+    }
   }
 
+  // ignore: non_constant_identifier_names
   Future<List<Map<dynamic, dynamic>>> _getVoicesVI_EN() async {
+    String locale = 'vi';
     try {
-      List<dynamic> data = await _tTS.getVoices;
+      List<dynamic> data = await _controllerTTS.getVoices;
       // Assuming getVoices returns a Future<List<Map>>
       List<Map<dynamic, dynamic>> listItem = List.from(data);
-
-      return listItem
-          .where((voice) => voice["locale"].contains(locale))
-          .toList();
+      List<Map<dynamic, dynamic>> listVI =
+          listItem.where((voice) => voice["locale"].contains(locale)).toList();
+      if (listVI.isEmpty) {
+        _handleErrorTTS(
+            error:
+                'Lỗi giọng đọc việt nam không được hỗ trợ trên thiết bị này');
+        return listItem;
+      } else {
+        return listVI;
+      }
     } catch (e) {
+      _handleErrorTTS(error: 'Lỗi getVoices $e');
+
       return []; // or handle the error as needed
     }
   }
 
   void _handlerTTS() async {
     // Auto speak list Texts
-    await _tTS.awaitSynthCompletion(true);
-    await _tTS.awaitSpeakCompletion(true);
-    _tTS.setCompletionHandler(() async {
-      _autoSpeak();
+    await _controllerTTS.awaitSynthCompletion(true);
+    await _controllerTTS.awaitSpeakCompletion(true);
+    _controllerTTS.setCompletionHandler(() {
+      _nextText();
     });
 
-    _tTS.setProgressHandler((text, start, end, word) {
+    _controllerTTS.setProgressHandler((text, start, end, word) {
       _indexPause = end;
 
-      if (_ttsState == TtsState.continued) {
-        progress(text, start + _indextContineus, end + _indextContineus, word,
-            _indexListTexts);
+      if (_ttsStatus == TtsStatus.resumed) {
+        progressSpeak(text, start + _indextContineus, end + _indextContineus,
+            word, _indexListTexts);
       } else {
-        progress(text, start, end, word, _indexListTexts);
+        progressSpeak(text, start, end, word, _indexListTexts);
       }
     });
+  }
+
+  void _setTtsStatus({required TtsStatus status}) {
+    _ttsStatus = status;
+    if (kDebugMode) print(_ttsStatus);
   }
 
   void _playTTS() async {
-    if (_indexListTexts < _texts.length) {
-      if (_ttsState == TtsState.stopped && _texts.isNotEmpty) {
-        _ttsState = TtsState.playing;
-        _speak(text: _texts[_indexListTexts]);
-      } else if (_ttsState == TtsState.paused) {
-        _ttsState = TtsState.continued;
-        String newText = _texts[_indexListTexts];
+    if (_listText != null) {
+      if (_ttsStatus != TtsStatus.paused &&
+          _indexListTexts < _listText!.length) {
+        _setTtsStatus(status: TtsStatus.playing);
+        _speak(text: _listText![_indexListTexts]);
+      } else if (_ttsStatus == TtsStatus.paused &&
+          _indexListTexts < _listText!.length) {
+        String newText = _listText![_indexListTexts];
+
+        _setTtsStatus(status: TtsStatus.resumed);
         _speak(text: newText.substring(_indexPause));
       } else {
-        stop();
+        _handleErrorTTS(
+            error:
+                'Không thể play TTS lỗi state: {$_ttsStatus} indexList:{$_indexListTexts}');
       }
+    } else {
+      _handleErrorTTS(error: 'Lỗi listText is Null');
     }
   }
 
-  int indexMaxSpeech = 1000;
-  void inintIndexMaxSpeech() async {
-    int? max = await _tTS.getMaxSpeechInputLength;
-    indexMaxSpeech = max ?? 1000;
-  }
+  void _nextText() {
+    if (_listText != null) {
+      ++_indexListTexts;
+      try {
+        if (_indexListTexts < _listText!.length) {
+          String text = _listText![_indexListTexts];
 
-  int getMaxSpeeh() {
-    return indexMaxSpeech;
-  }
-
-  void _autoSpeak() {
-    ++_indexListTexts;
-    if (_indexListTexts < _texts.length) {
-      String text = _texts[_indexListTexts];
-      _speak(text: text);
-      _ttsState = TtsState.playing;
+          _setTtsStatus(status: TtsStatus.start);
+          _speak(text: text);
+        } else {
+          _setTtsStatus(status: TtsStatus.complate);
+          stop();
+        }
+      } catch (e) {
+        _handleErrorTTS(error: 'Error Unknow fct _nextText(): {$e}');
+      }
     } else {
-      stop();
+      _handleErrorTTS(error: 'ListText input is Null');
     }
   }
 
   void _pauseTTS() {
-    _ttsState = TtsState.paused;
-    _tTS.pause();
+    _setTtsStatus(status: TtsStatus.paused);
+    _controllerTTS.pause();
   }
 
   void _stopTTS() {
-    _ttsState = TtsState.stopped;
-    _tTS.stop();
+    if (_ttsStatus != TtsStatus.complate) {
+      _setTtsStatus(status: TtsStatus.stopped);
+    }
+    _controllerTTS.stop();
   }
 
-  void _speak({required String text}) async {
+  void _speak({required String text}) {
     AudioService.androidForceEnableMediaButtons();
-    await _tTS.speak(text);
+    _controllerTTS.speak(text);
   }
 
-  TtsState getTtsSate() => _ttsState;
-  List<Map<dynamic, dynamic>> getVoices() => _listVoices;
-  double getSpeedTTS() => _speechTTS;
-  int getIndexTexts() => _indexListTexts;
-  Map<dynamic, dynamic> getVoiceInstall() => _voiceInstall;
   @override
   Future<void> skipToNext() async {
-    stop();
+    _setTtsStatus(status: TtsStatus.complate);
+    _playStateAudioHandler();
   }
 
   @override
@@ -221,30 +268,30 @@ class HandlerTTS extends BaseAudioHandler {
     final session = await AudioSession.instance;
     if (await session.setActive(true)) {
       _playTTS();
-      playStateAudioHandler();
+      _playStateAudioHandler();
     }
   }
 
   @override
   Future<void> stop() async {
     _stopTTS();
-    playStateAudioHandler();
+    _playStateAudioHandler();
   }
 
   @override
   Future<void> pause() async {
-    if (_ttsState == TtsState.continued) {
+    if (_ttsStatus == TtsStatus.resumed) {
       _indexPause += _indextContineus;
     }
     _indextContineus = _indexPause;
 
     _pauseTTS();
-    playStateAudioHandler();
+    _playStateAudioHandler();
   }
 
-  void playStateAudioHandler() {
-    switch (_ttsState) {
-      case TtsState.playing:
+  void _playStateAudioHandler() {
+    switch (_ttsStatus) {
+      case TtsStatus.playing:
         playbackState.add(playbackState.value.copyWith(
           controls: [
             MediaControl.pause,
@@ -254,7 +301,7 @@ class HandlerTTS extends BaseAudioHandler {
           playing: true,
         ));
         break;
-      case TtsState.continued:
+      case TtsStatus.resumed:
         playbackState.add(playbackState.value.copyWith(
           controls: [
             MediaControl.pause,
@@ -264,7 +311,7 @@ class HandlerTTS extends BaseAudioHandler {
           playing: true,
         ));
         break;
-      case TtsState.paused:
+      case TtsStatus.paused:
         playbackState.add(playbackState.value.copyWith(
           controls: [
             MediaControl.play,
@@ -274,9 +321,21 @@ class HandlerTTS extends BaseAudioHandler {
           playing: false,
         ));
         break;
-      case TtsState.stopped:
+      case TtsStatus.stopped:
         playbackState.add(playbackState.value.copyWith(
           processingState: AudioProcessingState.idle,
+          playing: false,
+        ));
+        break;
+      case TtsStatus.complate:
+        playbackState.add(playbackState.value.copyWith(
+          processingState: AudioProcessingState.completed,
+          playing: false,
+        ));
+        break;
+      case TtsStatus.error:
+        playbackState.add(playbackState.value.copyWith(
+          processingState: AudioProcessingState.error,
           playing: false,
         ));
         break;

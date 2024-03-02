@@ -1,7 +1,5 @@
 import 'package:get/get.dart';
 import 'package:tts_wikitruyen/pages/tts/tts_controller.dart';
-import 'package:tts_wikitruyen/services/wiki_truyen/convert_html.dart';
-import 'package:tts_wikitruyen/services/wiki_truyen/decore_wikitruyen.dart';
 
 import '../tts/enum_state.dart';
 
@@ -13,10 +11,10 @@ class ChapterController extends GetxController {
 
   int indexChapter = 0;
   RxList<String> chapter = <String>[].obs;
-  Rx<StatusLoading> statusLoading = StatusLoading.LOADING.obs;
+  Rx<StatusLoading> statusLoading = StatusLoading.loading.obs;
   late ControllerTTS controllerTTS;
   void init() async {
-    statusLoading.value = StatusLoading.LOADING;
+    statusLoading.value = StatusLoading.loading;
     controllerTTS = ControllerTTS();
 
     controllerTTS.loadNewChapter(
@@ -27,7 +25,7 @@ class ChapterController extends GetxController {
     controllerTTS.data.listen((p0) {
       chapter.value = p0;
     });
-    statusLoading.value = StatusLoading.SUCCES;
+    statusLoading.value = StatusLoading.succes;
   }
 
   String getNameChapter() => '${listChapter[indexChapter].keys}';

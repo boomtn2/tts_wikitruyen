@@ -63,13 +63,13 @@ class DecoreWikiTruyen {
 
     String key = signKey + start + size;
     JsEvalResult jsEvalResult =
-        javascriptRuntime.evaluate("""${fuzzySign} fuzzySign('${key}')""");
+        javascriptRuntime.evaluate("""$fuzzySign fuzzySign('$key')""");
 
     String keyFuzzySign = jsEvalResult.stringResult;
-    print(keyFuzzySign);
+
     //key sign
     jsEvalResult =
-        javascriptRuntime.evaluate("""${pathJS}a('${keyFuzzySign}')""");
+        javascriptRuntime.evaluate("""${pathJS}a('$keyFuzzySign')""");
     return jsEvalResult.stringResult;
   }
 }

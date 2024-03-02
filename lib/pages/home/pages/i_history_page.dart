@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
-import 'package:get/get_state_manager/get_state_manager.dart';
+import 'package:tts_wikitruyen/pages/widgets/itembooklist.dart';
 
 import '../../../models/book.dart';
 import '../home_controller.dart';
 
+// ignore: must_be_immutable
 class IHistoryPage extends StatelessWidget {
   IHistoryPage({super.key});
   final _controller = Get.find<HomeController>();
@@ -34,16 +35,14 @@ class IHistoryPage extends StatelessWidget {
             child: TabBarView(
               children: <Widget>[
                 Obx(
-                  ()=> ListView.builder(
+                  () => ListView.builder(
                     itemCount: _controller.listHistory.length,
                     itemBuilder: (context, index) =>
-                        ItemBook(book: _controller.listHistory[index]),
+                        BookListItem(book: _controller.listHistory[index]),
                   ),
                 ),
-                Container(
-                  child: Text('Màn 2'),
-                ),
-                Container()
+                const Text('Màn 2'),
+                const Text('Màn 3'),
               ],
             ),
           ),
@@ -87,7 +86,7 @@ class ButtonTagHotSreach extends StatelessWidget {
               borderRadius: BorderRadius.circular(10)),
           child: Center(
             child: Text(
-              '${title}',
+              title,
               style: TextStyle(
                   color: _controller.indexTagHistory.value == index
                       ? Colors.black
@@ -102,7 +101,7 @@ class ButtonTagHotSreach extends StatelessWidget {
 }
 
 class ItemBook extends StatelessWidget {
-  ItemBook({super.key, required this.book});
+  const ItemBook({super.key, required this.book});
   final Book book;
   @override
   Widget build(BuildContext context) {
@@ -113,7 +112,7 @@ class ItemBook extends StatelessWidget {
         color: Colors.blue,
         message: 'Hôm nay',
         child: Card(
-          color: Color.fromARGB(255, 228, 225, 225),
+          color: const Color.fromARGB(255, 228, 225, 225),
           child: Padding(
             padding: const EdgeInsets.all(2.0),
             child: SizedBox(
@@ -134,7 +133,7 @@ class ItemBook extends StatelessWidget {
                         )),
                     width: Get.size.width / 3,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 5,
                   ),
                   Expanded(
@@ -144,15 +143,15 @@ class ItemBook extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${book.bookName}',
-                          style: TextStyle(
+                          book.bookName,
+                          style: const TextStyle(
                               fontSize: 15, fontWeight: FontWeight.bold),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
-                          '${book.bookAuthor}',
-                          style: TextStyle(
+                          book.bookAuthor,
+                          style: const TextStyle(
                               color: Colors.black,
                               fontStyle: FontStyle.italic,
                               fontSize: 12),
@@ -161,7 +160,7 @@ class ItemBook extends StatelessWidget {
                         ),
                         Text(
                           '${book.history?.nameChapter}',
-                          style: TextStyle(
+                          style: const TextStyle(
                               color: Colors.blue,
                               fontWeight: FontWeight.bold,
                               fontSize: 12),

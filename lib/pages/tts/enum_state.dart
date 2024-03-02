@@ -1,3 +1,13 @@
-enum TtsState { playing, stopped, paused, continued, error }
+enum TtsStatus {
+  start,
+  playing,
+  stopped,
+  paused,
+  resumed,
+  continued,
+  complate,
+  error,
+  unknown
+}
 
-enum StatusLoading { ERROR, SUCCES, LOADING }
+enum StatusLoading { error, succes, loading }

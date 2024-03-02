@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 class Book {
   String imgPath;
   String bookPath;
@@ -10,7 +8,7 @@ class Book {
   String bookStar;
   String bookComment;
   History? history;
-  String BASE_URL = 'https://wikisach.net/';
+  String baseUrl = 'https://wikisach.net/';
   Book(
       {required this.imgPath,
       required this.bookPath,
@@ -22,8 +20,8 @@ class Book {
       required this.bookComment,
       this.history});
 
-  String get imgFullPath => BASE_URL + imgPath;
-  String get bookFullPath => BASE_URL + bookPath;
+  String get imgFullPath => baseUrl + imgPath;
+  String get bookFullPath => baseUrl + bookPath;
   factory Book.json(Map<dynamic, dynamic> json) {
     return Book(
         imgPath: json['imgPath'],

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:tts_wikitruyen/pages/widgets/itembooklist.dart';
+import 'package:tts_wikitruyen/pages/widgets/loading_widget.dart';
 
-import '../../../res/routers/app_router_name.dart';
-import '../../widgets/item_book.dart';
 import '../search_controller.dart';
+import 'widget_tags_slectected.dart';
 
 class ReponseSearchPage extends StatelessWidget {
   ReponseSearchPage({super.key});
@@ -14,11 +15,9 @@ class ReponseSearchPage extends StatelessWidget {
       () => Column(
         mainAxisSize: MainAxisSize.max,
         children: [
+          TagsSelected(),
           _controller.isLoading.value
-              ? Center(
-                  child: CircularProgressIndicator(
-                  color: Colors.white,
-                ))
+              ? const LoadingWidget()
               : Expanded(
                   child: ListView.builder(
                       itemCount: _controller.listBooks.length,
@@ -26,19 +25,10 @@ class ReponseSearchPage extends StatelessWidget {
                         if (index == _controller.listBooks.length - 1 &&
                             _controller.isLoadMore.value == false) {
                           _controller.loadMoreItems();
-                          return Center(
-                              child: CircularProgressIndicator(
-                            color: Colors.white,
-                          ));
+                          return const LoadingWidget();
                         }
-                        return ItemBook(
+                        return BookListItem(
                           book: _controller.listBooks[index],
-                          nexToPage: () {
-                            Get.lazyPut(() => _controller.listBooks[index],
-                                tag: 'Page BookInfo');
-
-                            Get.toNamed(AppRoutesName.bookInfo);
-                          },
                         );
                       }),
                 ),

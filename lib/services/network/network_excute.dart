@@ -5,7 +5,7 @@ import 'core/create_network.dart';
 import 'untils/untils.dart';
 
 class NetworkExecuter {
-  NetworkCreate _network = NetworkCreate();
+  final NetworkCreate _network = NetworkCreate();
   Future<Object> excute({required BaseClientGenerator router}) async {
     if (await CheckConnection.isConnection()) {
       return _network.request(route: router);

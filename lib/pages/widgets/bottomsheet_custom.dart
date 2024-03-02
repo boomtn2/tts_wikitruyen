@@ -14,7 +14,7 @@ Widget bottomSheetCustom(
               .map(
                 (e) => ListTile(
                     title: Text(
-                      '${e}',
+                      '$e',
                       style: TextStyle(
                           color: indexChoose == e ? Colors.red : Colors.white),
                     ),

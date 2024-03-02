@@ -54,6 +54,8 @@ class HomeController extends GetxController {
   }
 
   init() async {
+    isError.value = false;
+    errorNetWork = null;
     final git = Client()..baseURLClient = StringLinkConnection.hotTags;
     var gistReponse = await network.excute(router: git);
     if (gistReponse is dio.Response) {
@@ -73,7 +75,6 @@ class HomeController extends GetxController {
       isError.value = true;
       errorNetWork = error;
     }
-    print(error);
   }
 
   void selectTag({required int indexTag}) {
@@ -96,7 +97,7 @@ class HomeController extends GetxController {
     isLoading.value = true;
 
     //param
-    hotTags[indexHotTag.value].params['start'] = '${start}';
+    hotTags[indexHotTag.value].params['start'] = '$start';
     await loading(isLoadNew: true);
     isLoading.value = false;
   }

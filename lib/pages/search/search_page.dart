@@ -13,7 +13,7 @@ class SearchPage extends StatelessWidget {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Tìm kiếm'),
+          title: const Text('Tìm kiếm'),
         ),
         body: TabBarView(
           children: <Widget>[
