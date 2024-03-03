@@ -8,8 +8,31 @@ import 'package:html/dom.dart' as dom;
 
 import '../../models/bookinfor.dart';
 
-abstract class BaseHtml {
-  String getChapter({required Response response});
+Map<String, String> querryHTMLChapter = {
+  'wikitruyen': '#bookContentBody',
+  'dtruyen': '#chapter-content',
+};
+
+class BaseHtml {
+  String getChapter({required Response response, required String link}) {
+    String chapter = '';
+    Map<String, String> querrys = querryHTMLChapter;
+    if (response.statusCode == 200) {
+      String htmlString = response.data;
+      dom.Document document = htmlParser.parse(htmlString);
+      var info = document.querySelector('*');
+      querrys.entries.forEach((element) {
+        if (element.key.compareTo(link) >= 0) {
+          info = document.querySelector(element.value);
+        }
+      });
+
+      if (info != null) {
+        chapter = info!.text;
+      }
+    }
+    return chapter;
+  }
 }
 
 class ConvertHtml extends BaseHtml {
@@ -146,27 +169,5 @@ class ConvertHtml extends BaseHtml {
     RegExp regex = RegExp(r'function fuzzySign[\s\S]*?}');
     Match? match = regex.firstMatch(html);
     return match?.group(0);
-  }
-
-  @override
-  String getChapter({required Response response}) {
-    String chapter = '';
-
-    if (response.statusCode == 200) {
-      String htmlString = response.data;
-
-      // Phân tích cú pháp HTML
-      dom.Document document = htmlParser.parse(htmlString);
-      var info = document.querySelector('#bookContentBody');
-
-      // In ra nội dung của mỗi thẻ div có class là "book-item"
-
-      //lay link
-
-      if (info != null) {
-        chapter = info.text;
-      }
-    }
-    return chapter;
   }
 }

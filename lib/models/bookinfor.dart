@@ -25,4 +25,12 @@ class BookInfo {
     }
     return 0;
   }
+
+  List<String> getListLinks() {
+    List<String> links = [];
+    for (var element in dsChuong) {
+      links.add(element.entries.first.value);
+    }
+    return links;
+  }
 }

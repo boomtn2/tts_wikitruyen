@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:tts_wikitruyen/models/bookinfor.dart';
+import 'package:tts_wikitruyen/pages/download/dialog_download.dart';
+import 'package:tts_wikitruyen/pages/download/download_controller.dart';
 
 import 'package:tts_wikitruyen/pages/tts/tts_controller.dart';
 import 'package:tts_wikitruyen/pages/widgets/dialog.dart';
@@ -36,6 +38,16 @@ class BookInfoController extends GetxController {
   String messError = '';
   BookInfoController({required this.book}) {
     init();
+  }
+
+  void dowLoad() {
+    bookInfo.value.book = book;
+
+    Get.dialog(DialogDownLoad(
+      controller: DownloadController(bookInfo: bookInfo.value),
+      right: () {},
+      left: () {},
+    ));
   }
 
   void loadMoreChapter() async {

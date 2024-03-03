@@ -62,7 +62,9 @@ class _BookInfoPageState extends State<BookInfoPage> {
         appBar: AppBar(
           actions: [
             const Icon(Icons.favorite),
-            const Icon(Icons.download),
+            InkWell(
+                onTap: () => _controller.dowLoad(),
+                child: const Icon(Icons.download)),
             InkWell(
                 onTap: () {
                   Get.changeThemeMode(ThemeMode.dark);

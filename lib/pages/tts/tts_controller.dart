@@ -259,7 +259,7 @@ class ControllerTTS {
         autoLoading = false;
         _handleError(error: 'loadChapter Error: ${response.statusCode}');
       }
-      data = convertHtml.getChapter(response: response);
+      data = convertHtml.getChapter(response: response, link: path);
     } else {
       autoLoading = false;
       if (response is ErrorNetWork) {

@@ -2,6 +2,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:tts_wikitruyen/pages/error/error_controller.dart';
 import 'package:tts_wikitruyen/res/const_app.dart';
 
 import 'pages/tts/handler_tts.dart';
@@ -11,6 +12,7 @@ import 'res/theme/theme_config.dart';
 import 'services/local/hive/hive_service.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   Get.putAsync(() => AudioService.init(
       builder: () => HandlerTTS(),
       config: const AudioServiceConfig(
@@ -19,6 +21,7 @@ void main() async {
         androidNotificationOngoing: true,
       )));
   HiveServices.init();
+  Get.put(ErrorController(), permanent: true);
   runApp(const AppRoot());
 }
 

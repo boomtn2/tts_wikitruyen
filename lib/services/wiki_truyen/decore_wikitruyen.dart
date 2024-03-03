@@ -14,8 +14,8 @@ class DecoreWikiTruyen {
     return listBook;
   }
 
-  static String getChapter({required Response response}) {
-    return ConvertHtml().getChapter(response: response);
+  static String getChapter({required Response response, required String link}) {
+    return ConvertHtml().getChapter(response: response, link: link);
   }
 
   static BookInfo getInfoBook({required Response response}) {
