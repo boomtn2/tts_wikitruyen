@@ -45,8 +45,6 @@ class HomeController extends GetxController {
         case 1:
           break;
         case 2:
-          listHistory.value = HiveServices.getHistory();
-
           break;
       }
       currenPage.value = indexPage;

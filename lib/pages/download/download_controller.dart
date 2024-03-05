@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 import 'package:tts_wikitruyen/models/bookinfor.dart';
-import 'package:tts_wikitruyen/pages/error/error_controller.dart';
+
 import 'package:tts_wikitruyen/services/network/network.dart';
 import 'package:dio/dio.dart' as dio;
 import 'package:tts_wikitruyen/services/wiki_truyen/convert_html.dart';
@@ -16,7 +16,7 @@ class DownloadController extends GetxController {
   RxBool isError = false.obs;
 
   int getLengthLinks() => bookInfo.dsChuong.length;
-  final error = Get.find<ErrorController>();
+
   final client = Client();
   bool isStopDownload = false;
   void getTextToLink() async {
@@ -37,14 +37,10 @@ class DownloadController extends GetxController {
         saveDataInLocal(data);
         i++;
       } else {
-        error.isError.value = true;
-        error.messError = response.toString();
         break;
       }
     }
   }
 
-  void saveDataInLocal(String data) {
-    print(data);
-  }
+  void saveDataInLocal(String data) {}
 }

@@ -39,7 +39,6 @@ dependencies:
   html: ^0.15.4
   dio: ^5.4.0
   get: ^4.6.6
-  flutter_js: ^0.8.0
   audio_service: ^0.18.12
   audio_session: ^0.1.18
   hive: ^2.2.3
@@ -50,6 +49,7 @@ dependencies:
   uuid: ^4.3.3
   sqflite: ^2.3.2
   path: ^1.8.3
+  webview_flutter: ^4.7.0
 
 dev_dependencies:
   flutter_test:

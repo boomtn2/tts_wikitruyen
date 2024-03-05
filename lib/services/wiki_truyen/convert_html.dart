@@ -61,7 +61,7 @@ class ConvertHtml extends BaseHtml {
           }
 
           String bookName = '';
-          String bookPath = '';
+          String bookPath = PathWiki.BASEURL_Wiki;
           temp = item.querySelector('a.tooltipped');
           if (temp != null) {
             bookName = temp.attributes['data-tooltip'] ?? '';

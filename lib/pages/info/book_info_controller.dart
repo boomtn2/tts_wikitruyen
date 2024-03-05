@@ -1,13 +1,10 @@
-import 'dart:math';
-
-import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:tts_wikitruyen/models/bookinfor.dart';
 import 'package:tts_wikitruyen/pages/download/dialog_download.dart';
 import 'package:tts_wikitruyen/pages/download/download_controller.dart';
 
 import 'package:tts_wikitruyen/pages/tts/tts_controller.dart';
+import 'package:tts_wikitruyen/pages/webview/webview_controller.dart';
 import 'package:tts_wikitruyen/pages/widgets/dialog.dart';
 import 'package:tts_wikitruyen/res/routers/app_router_name.dart';
 import 'package:tts_wikitruyen/services/local/hive/hive_service.dart';
@@ -21,24 +18,27 @@ import '../../services/wiki_truyen/path_wiki.dart';
 import '../tts/enum_state.dart';
 
 class BookInfoController extends GetxController {
-  Book book;
+  late Book book;
   Rx<String> nameBook = ''.obs;
   Rx<BookInfo> bookInfo = BookInfo(theLoai: [], moTa: '', dsChuong: []).obs;
   Rx<StatusLoading> statusLoading = StatusLoading.loading.obs;
   RxList<Book> listBookSame = <Book>[].obs;
   String pathJS = "";
   RxBool isLoadListChapter = false.obs;
-  RxBool isLoadMore = false.obs;
+
   //tts
   ControllerTTS controllerTTS = ControllerTTS();
+  WVController controllerWV = WVController();
   NetworkExecuter network = NetworkExecuter();
-  RxInt maxItemScroll = 20.obs;
 
   RxBool isError = false.obs;
   String messError = '';
-  BookInfoController({required this.book}) {
-    init();
+
+  BookInfoController() {
+    book = HiveServices.getBook();
   }
+
+  WVController getControllerWV() => controllerWV;
 
   void dowLoad() {
     bookInfo.value.book = book;
@@ -50,62 +50,26 @@ class BookInfoController extends GetxController {
     ));
   }
 
-  void loadMoreChapter() async {
-    isLoadListChapter.value = true;
-
-    await Future.delayed(const Duration(seconds: 1));
-    bookInfo.value.dsChuong.length - maxItemScroll.value > 20
-        ? maxItemScroll.value += 20
-        : maxItemScroll.value = bookInfo.value.dsChuong.length;
-    isLoadListChapter.value = false;
-  }
-
   void init() async {
     isError.value = false;
     statusLoading.value = StatusLoading.loading;
     nameBook.value = book.bookName;
 
-    await loadInfoBook();
     getListBookSame();
+    controllerWV.inintHandleListenEvent();
+    controllerWV.loadRequest(book.bookPath);
 
-    controllerTTS.setInput(
-        linksChapter: bookInfo.value.dsChuong,
-        indexlinksChapter: -1,
-        text: bookInfo.value.moTa,
-        indexLineTexts: 0,
-        tilte: 'Mô tả');
-    if (book.history != null) {
-      print(book.history!.chapterPath);
-      // controllerTTS.bookMark(
-      //     path: book.history!.chapterPath,
-      //     chapterName: book.history!.nameChapter,
-      //     stringMark: book.history!.text);
-    }
+    controllerWV.loading.listen((p0) {
+      bookInfo.value = controllerWV.getBookInfo();
 
-    statusLoading.value = StatusLoading.succes;
-  }
-
-  Future loadInfoBook() async {
-    WikiBaseClient wiki = WikiBaseClient();
-    wiki.url = book.bookPath;
-    final repo = await network.excute(router: wiki);
-    // ignore: no_leading_underscores_for_local_identifiers
-    final BookInfo _bookInfo;
-    if (repo is dio.Response) {
-      _bookInfo = DecoreWikiTruyen.getInfoBook(response: repo);
-      wiki = await DecoreWikiTruyen.getKeyChapters(reponseBookInfoNow: repo);
-
-      final repoListChapter = await network.excute(router: wiki);
-
-      if (repoListChapter is dio.Response) {
-        _bookInfo.dsChuong =
-            DecoreWikiTruyen.getListChapter(response: repoListChapter);
-        bookInfo.value = _bookInfo;
-        showDialog();
-      } else {}
-    } else {
-      handleError(error: repo);
-    }
+      controllerTTS.setInput(
+          linksChapter: bookInfo.value.dsChuong,
+          indexlinksChapter: -1,
+          text: bookInfo.value.moTa,
+          indexLineTexts: 0,
+          tilte: 'Mô tả');
+      statusLoading.value = StatusLoading.succes;
+    });
   }
 
   void showDialog() {
@@ -158,7 +122,6 @@ class BookInfoController extends GetxController {
         nameChapter: nameChapterNow(),
         chapterPath: chapterPath(),
         text: textChapterNow());
-    HiveServices.addHistory(book: book);
   }
 
   String nameChapterNow() {

@@ -19,7 +19,8 @@ class BookInfo {
 
   int getIndexChapterInList({required Map<String, String> choose}) {
     for (int i = 0; i < dsChuong.length; ++i) {
-      if (dsChuong[i] == choose) {
+      if (dsChuong[i].entries.first.key == choose.entries.first.key &&
+          dsChuong[i].entries.first.value == choose.entries.first.value) {
         return i;
       }
     }

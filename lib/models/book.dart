@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 class Book {
   String imgPath;
   String bookPath;
@@ -60,6 +62,18 @@ class Book {
       'bookComment': bookComment,
       'history': history?.toMap(),
     };
+  }
+
+  factory Book.none() {
+    return Book(
+        imgPath: '',
+        bookPath: '',
+        bookName: '',
+        bookAuthor: '',
+        bookPublisher: '',
+        bookViews: '',
+        bookStar: '',
+        bookComment: '');
   }
 }
 

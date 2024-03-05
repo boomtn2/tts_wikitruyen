@@ -7,12 +7,14 @@ import 'package:tts_wikitruyen/pages/widgets/image_networkcustom.dart';
 
 import 'package:tts_wikitruyen/pages/widgets/itembooklist.dart';
 import 'package:tts_wikitruyen/res/const_app.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../models/book.dart';
 import '../tts/enum_state.dart';
 import '../tts/widget_buttonTTS.dart';
 
-import '../widgets/desciption_widget.dart';
+import '../webview/webview_export.dart';
+import 'desciption_widget.dart';
 import '../widgets/loading_widget.dart';
 
 class BookInfoPage extends StatefulWidget {
@@ -31,12 +33,10 @@ class BookInfoPage extends StatefulWidget {
 
 class _BookInfoPageState extends State<BookInfoPage> {
   final BookInfoController _controller = Get.find<BookInfoController>();
-  final _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
   }
 
   @override
@@ -44,16 +44,6 @@ class _BookInfoPageState extends State<BookInfoPage> {
     _controller.controllerTTS.stopTTS();
     _controller.saveHistoryBook();
     super.dispose();
-  }
-
-  void _onScroll() {
-    final maxScroll = _scrollController.position.maxScrollExtent;
-    final currentScroll = _scrollController.offset;
-    if (currentScroll >= (maxScroll * 0.9)) {
-      if (_controller.isLoadListChapter.value == false) {
-        _controller.loadMoreChapter();
-      }
-    }
   }
 
   @override
@@ -82,7 +72,6 @@ class _BookInfoPageState extends State<BookInfoPage> {
                       _controller.init();
                     })
                 : ListView(
-                    controller: _scrollController,
                     children: [
                       const _Divider(),
                       _BookDescriptionSection(
@@ -99,12 +88,9 @@ class _BookInfoPageState extends State<BookInfoPage> {
                       ItemListBookSame(),
                       const _Divider(),
                       const _SectionTitle(title: 'Chương:'),
-                      ListChapters(),
-                      _controller.isLoadListChapter.value
-                          ? const LoadingWidget()
-                          : Container(),
+                      WebViewPage(controller: _controller.getControllerWV()),
                       const SizedBox(
-                        height: 80,
+                        height: 200,
                       ),
                     ],
                   ),
@@ -162,47 +148,6 @@ class ItemListBookSame extends StatelessWidget {
               }),
         ),
       ),
-    );
-  }
-}
-
-class ListChapters extends StatelessWidget {
-  ListChapters({super.key});
-  final _controller = Get.find<BookInfoController>();
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.max,
-      children: [
-        Obx(
-          () => Card(
-            child: Padding(
-              padding: const EdgeInsets.all(5.0),
-              child: Column(children: [
-                for (int i = 0;
-                    i <
-                        (_controller.bookInfo.value.dsChuong.length >
-                                _controller.maxItemScroll.value
-                            ? _controller.maxItemScroll.value
-                            : _controller.bookInfo.value.dsChuong.length);
-                    ++i)
-                  InkWell(
-                    onTap: () {
-                      _controller.nextToChapterPage(
-                          choose: _controller.bookInfo.value.dsChuong[i]);
-                    },
-                    child: Card(
-                      child: ListTile(
-                        title: Text(
-                            "${_controller.bookInfo.value.dsChuong[i].keys}"),
-                      ),
-                    ),
-                  )
-              ]),
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

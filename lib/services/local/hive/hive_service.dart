@@ -4,29 +4,55 @@ import 'package:tts_wikitruyen/models/book.dart';
 
 class HiveServices {
   HiveServices._();
-  static const String _keyHistory = "history_tts";
-  static const String _keyFavorite = "favorite_tts";
+  static const String _keyApp = "tts_audio_parram";
 
-  static late final Box boxHistory;
-  static late final Box boxFavorite;
+  static late final Box boxApp;
+
+  static const String stKeyPraramBook = 'book';
+  static const String stKeyVersion = 'version';
+  static const String stKeyIsOffline = 'offline';
 
   static Future init() async {
     final appDocumentDirectory =
         await path_provider.getApplicationDocumentsDirectory();
     Hive.init(appDocumentDirectory.path);
-    boxHistory = await Hive.openBox(_keyHistory);
-    boxFavorite = await Hive.openBox(_keyFavorite);
+    boxApp = await Hive.openBox(_keyApp);
   }
 
-  static addHistory({required Book book}) async {
-    await boxHistory.put(book.bookPath, book.toMapFullOption());
+  static addVersion({required String version}) async {
+    version.trim();
+    await boxApp.put(stKeyVersion, version);
   }
 
-  static List<Book> getHistory() {
-    List<Book> historys = [];
-    boxHistory.toMap().forEach((key, value) {
-      historys.add(Book.json(value));
-    });
-    return historys;
+  static addStateOffline({required bool isOffline}) async {
+    //1 true 0 false
+    await boxApp.put(stKeyIsOffline, isOffline ? '1' : '0');
+  }
+
+  static addBook({required Book book}) async {
+    await boxApp.put(stKeyPraramBook, book.toMapFullOption());
+  }
+
+  static Book getBook() {
+    final box = boxApp.get(stKeyPraramBook);
+    if (box == null) {
+      return Book.none();
+    } else {
+      return Book.json(box);
+    }
+  }
+
+  static String getVersion() {
+    final box = boxApp.get(stKeyPraramBook);
+    return '$box';
+  }
+
+  static bool getIsOffline() {
+    final box = boxApp.get(stKeyPraramBook);
+    if (box == null || '1'.compareTo('$box') == 0) {
+      return false;
+    } else {
+      return true;
+    }
   }
 }

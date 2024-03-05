@@ -20,17 +20,23 @@ class DatabaseHelper {
 
   final String nameDB = 'dbttswikitruyen.db';
   // Tên của bảng và các cột
-  final String tableBook = 'book_audio';
+  final String tableBookFavorite = 'book_favorite';
+  final String tableBookHistory = 'book_history';
+  final String tableBook = 'book_offline';
   final String columnId = 'id';
   final String imgPath = 'imgPath';
   final String bookName = 'bookName';
   final String bookAuthor = 'bookAuthor';
+  final String bookPath = 'bookPath';
   final String theLoai = 'theLoai';
   final String moTa = 'moTa';
 
-  final String tableChapter = 'chapter_audio';
+  final String tableChapter = 'chapter_offline';
   final String nameChapter = 'nameChapter';
   final String textChapter = 'textChapter';
+
+  final String tableHistory = 'history';
+  //nameChapter
 
   Future<Database?> get db async {
     if (_db != null) return _db;
@@ -47,9 +53,17 @@ class DatabaseHelper {
 
   void _onCreate(Database db, int newVersion) async {
     await db.execute(
-        'CREATE TABLE $tableBook($columnId TEXT PRIMARY KEY ,$imgPath TEXT,$bookName TEXT,$bookAuthor TEXT,$moTa TEXT, $theLoai TEXT)');
+        'CREATE TABLE $tableBook($columnId TEXT PRIMARY KEY ,$imgPath TEXT,$bookName TEXT,$bookAuthor TEXT,$moTa TEXT, $theLoai TEXT, $bookPath TEXT)');
+    await db.execute(
+        'CREATE TABLE $tableBookFavorite($columnId TEXT PRIMARY KEY ,$imgPath TEXT,$bookName TEXT,$bookAuthor TEXT,$moTa TEXT, $theLoai TEXT, $bookPath TEXT)');
+
+    await db.execute(
+        'CREATE TABLE $tableBookHistory($columnId TEXT PRIMARY KEY ,$imgPath TEXT,$bookName TEXT,$bookAuthor TEXT,$moTa TEXT, $theLoai TEXT, $bookPath TEXT)');
+
     await db.execute(
         'CREATE TABLE $tableChapter($columnId TEXT,$nameChapter TEXT,$textChapter TEXT )');
+    await db.execute(
+        'CREATE TABLE $tableHistory($columnId TEXT,$nameChapter TEXT)');
   }
 
   // Thêm dữ liệu
