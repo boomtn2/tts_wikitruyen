@@ -113,8 +113,8 @@ class BookListItem extends StatelessWidget {
                   Text(
                     book.history == null
                         ? book.bookViews
-                        : book.history!.nameChapter,
-                    maxLines: 1,
+                        : book.history!.nameChapter.trim(),
+                    maxLines: book.history == null ? 1 : 2,
                     style: TextStyle(
                       fontSize: 13.0,
                       color: Get.theme.textTheme.bodySmall!.color,

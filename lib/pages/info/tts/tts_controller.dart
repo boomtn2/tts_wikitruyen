@@ -275,6 +275,7 @@ class ControllerTTS {
 
   List<String> splitTextIntoSentences(String inputText) {
     // inputText = inputText.replaceAll(RegExp(r'[^a-zA-ZÀ-ỹ0-9{1,}.!:? "]+'), '');
+    inputText = inputText.replaceAll(r'\n', '.');
     inputText = inputText.replaceAll(RegExp(r'\.+'), '.');
     inputText = inputText.replaceAll('.', '.\n');
     List<String> segments = [];

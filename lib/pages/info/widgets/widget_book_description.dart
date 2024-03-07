@@ -21,61 +21,74 @@ class BookDescriptionSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Hero(
-            tag: imgTag,
-            child: ImageNetWorkCustom(
-              link: book.imgPath,
-              pathAssetImg: pathAssetsError,
-              widgetLoading: const LoadingWidget(
-                isImage: true,
-              ),
-              height: 200,
-              width: 130,
-            )),
-        const SizedBox(width: 20.0),
-        Flexible(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              const SizedBox(height: 5.0),
-              Hero(
-                tag: titleTag,
-                child: Material(
-                  type: MaterialType.transparency,
-                  child: Text(
-                    book.bookName,
-                    style: const TextStyle(
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    maxLines: 3,
+    return Column(
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Hero(
+                tag: imgTag,
+                child: ImageNetWorkCustom(
+                  link: book.imgPath,
+                  pathAssetImg: pathAssetsError,
+                  widgetLoading: const LoadingWidget(
+                    isImage: true,
                   ),
-                ),
-              ),
-              const SizedBox(height: 5.0),
-              Hero(
-                tag: authorTag,
-                child: Material(
-                  type: MaterialType.transparency,
-                  child: Text(
-                    book.bookAuthor,
-                    style: const TextStyle(
-                      fontSize: 16.0,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.grey,
+                  height: 200,
+                  width: 130,
+                )),
+            const SizedBox(width: 20.0),
+            Flexible(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const SizedBox(height: 5.0),
+                  Hero(
+                    tag: titleTag,
+                    child: Material(
+                      type: MaterialType.transparency,
+                      child: Text(
+                        book.bookName,
+                        style: const TextStyle(
+                          fontSize: 20.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 3,
+                      ),
                     ),
                   ),
-                ),
+                  const SizedBox(height: 5.0),
+                  Hero(
+                    tag: authorTag,
+                    child: Material(
+                      type: MaterialType.transparency,
+                      child: Text(
+                        book.bookAuthor,
+                        style: const TextStyle(
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 5.0),
+                ],
               ),
-              const SizedBox(height: 5.0),
-              CategoryChips(),
-            ],
-          ),
+            ),
+          ],
         ),
+        CategoryChips(),
+        book.history != null
+            ? Card(
+                child: ListTile(
+                  textColor: Colors.red,
+                  title: Text(book.history!.nameChapter),
+                  subtitle: const Text("Bạn đã đọc tới chương này này!"),
+                ),
+              )
+            : const SizedBox.shrink()
       ],
     );
   }
@@ -109,7 +122,7 @@ class CategoryChips extends StatelessWidget {
                     category.key,
                     style: TextStyle(
                       color: context.theme.colorScheme.secondary,
-                      fontSize: 12.0,
+                      fontSize: 10.0,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

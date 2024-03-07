@@ -24,9 +24,9 @@ class _DescriptionTextWidgetState extends State<DescriptionTextWidget> {
   }
 
   void _splitText() {
-    if (widget.text.length > 300) {
-      firstHalf = widget.text.substring(0, 300);
-      secondHalf = widget.text.substring(300, widget.text.length);
+    if (widget.text.length > 150) {
+      firstHalf = widget.text.substring(0, 150);
+      secondHalf = widget.text.substring(150, widget.text.length);
     } else {
       firstHalf = widget.text;
       secondHalf = '';

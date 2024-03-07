@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
+import 'package:get/get_state_manager/get_state_manager.dart';
 
 import 'package:tts_wikitruyen/html/html.dart';
 
@@ -26,10 +27,10 @@ class ItemSearchPage extends StatelessWidget {
         Expanded(
           child: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: ListView.builder(
-              itemBuilder: (context, index) {
-                return Obx(
-                  () => Column(
+            child: Obx(
+              () => ListView.builder(
+                itemBuilder: (context, index) {
+                  return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.max,
                     children: [
@@ -38,19 +39,23 @@ class ItemSearchPage extends StatelessWidget {
                           color: Colors.red,
                           child: Text(
                               _controller.listGrTagSearch[index].namegroup)),
-                      Wrap(
-                        spacing: 5,
-                        children: _controller.listGrTagSearch[index].tags
-                            .map((e) => widgetSelect(
-                                isSelected: _controller.isTagSelected(e),
-                                tagSearch: e))
-                            .toList(),
-                      )
+                      _controller.listGrTagSearch[index].tags.length > 0
+                          ? Obx(() => Wrap(
+                                spacing: 5,
+                                children: _controller
+                                    .listGrTagSearch.value[index].tags
+                                    .map((e) => widgetSelect(
+                                        isSelected:
+                                            _controller.isTagSelected(e),
+                                        tagSearch: e))
+                                    .toList(),
+                              ))
+                          : const SizedBox.shrink()
                     ],
-                  ),
-                );
-              },
-              itemCount: _controller.listGrTagSearch.length,
+                  );
+                },
+                itemCount: _controller.listGrTagSearch.length,
+              ),
             ),
           ),
         )

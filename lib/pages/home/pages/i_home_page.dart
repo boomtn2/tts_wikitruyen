@@ -24,6 +24,18 @@ class BodyHome extends StatelessWidget {
           : Column(
               mainAxisSize: MainAxisSize.max,
               children: [
+                SizedBox(
+                    height: 40,
+                    width: Get.size.width,
+                    child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount:
+                            _controller.listWebsite.value.listWebsite.length,
+                        itemBuilder: (context, index) => websites(
+                              _controller
+                                  .listWebsite.value.listWebsite[index].website,
+                              index,
+                            ))),
                 _GenreSection(),
                 _controller.isLoading.value
                     ? const LoadingWidget()
@@ -44,6 +56,45 @@ class BodyHome extends StatelessWidget {
                       ),
               ],
             ),
+    );
+  }
+
+  Widget websites(String title, int index) {
+    return Obx(
+      () => InkWell(
+        onTap: () {
+          _controller.selectWebsite(index);
+        },
+        child: Container(
+          margin: const EdgeInsets.only(left: 5),
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+              color: _controller.websiteNow.value.website ==
+                      _controller.listWebsite.value.listWebsite[index].website
+                  ? Colors.white
+                  : Colors.black,
+              border: Border.all(
+                color: _controller.websiteNow.value.website ==
+                        _controller.listWebsite.value.listWebsite[index].website
+                    ? Colors.blue
+                    : Colors.white30,
+                width: _controller.indexTagHistory.value == index ? 1 : 2,
+              ),
+              borderRadius: BorderRadius.circular(10)),
+          child: Center(
+            child: Text(
+              title,
+              style: TextStyle(
+                  color: _controller.websiteNow.value.website ==
+                          _controller
+                              .listWebsite.value.listWebsite[index].website
+                      ? Colors.black
+                      : Colors.white60,
+                  fontWeight: FontWeight.bold),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

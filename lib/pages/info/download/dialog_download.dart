@@ -97,10 +97,10 @@ class DialogDownload extends StatelessWidget {
         );
         break;
       case StatusDownload.error:
-        widget = const Column(
+        widget = Column(
           children: [
-            Text('Trạng thái: Lỗi!'),
-            SizedBox(
+            Text('Trạng thái: Lỗi! [${_controller.messError}]'),
+            const SizedBox(
               height: 50,
               width: 50,
               child: Icon(Icons.error),

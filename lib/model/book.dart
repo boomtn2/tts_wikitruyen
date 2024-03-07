@@ -23,14 +23,14 @@ class Book {
   String get id => bookName + bookAuthor;
   factory Book.json(Map<dynamic, dynamic> json) {
     return Book(
-        imgPath: json['imgPath'],
-        bookPath: json['bookPath'],
-        bookName: json['bookName'],
-        bookAuthor: json['bookAuthor'],
-        bookPublisher: json['bookPublisher'],
-        bookViews: json['bookPublisher'],
-        bookStar: json['bookPublisher'],
-        bookComment: json['bookPublisher'],
+        imgPath: '${json['imgPath']}',
+        bookPath: '${json['bookPath']}',
+        bookName: '${json['bookName']}',
+        bookAuthor: '${json['bookAuthor']}',
+        bookPublisher: '${json['bookPublisher']}',
+        bookViews: '${json['bookPublisher']}',
+        bookStar: '${json['bookPublisher']}',
+        bookComment: '${json['bookPublisher']}',
         history:
             json['history'] == null ? null : History.json(json['history']));
   }
@@ -94,8 +94,8 @@ class History {
 
   factory History.json(Map<dynamic, dynamic> json) {
     return History(
-        nameChapter: json['nameChapter'],
-        chapterPath: json['chapterPath'],
-        text: json['text']);
+        nameChapter: '${json['nameChapter']}',
+        chapterPath: '${json['chapterPath']}',
+        text: '${json['text']}');
   }
 }

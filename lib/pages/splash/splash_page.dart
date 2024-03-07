@@ -49,9 +49,7 @@ class _SplashPageState extends State<SplashPage> {
       print(HiveServices.getVersion());
     }
 
-    if (HiveServices.getVersion() != null) {
-      Get.offNamed(AppRoutesName.home);
-    }
+    Get.offNamed(AppRoutesName.home);
   }
 
   @override
@@ -60,7 +58,6 @@ class _SplashPageState extends State<SplashPage> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Background Image or Color
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
@@ -69,9 +66,6 @@ class _SplashPageState extends State<SplashPage> {
               ),
             ),
           ),
-          // Centered Image
-          // Loading Indicator at the Bottom
-
           const Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

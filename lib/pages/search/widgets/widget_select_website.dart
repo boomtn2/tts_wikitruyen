@@ -23,7 +23,9 @@ class WidgetSelectWebsite extends StatelessWidget {
             color: Colors.deepPurpleAccent,
           ),
           onChanged: (String? value) {
-            // This is called when the user selects an item.
+            if (value != null) {
+              _controller.changeWebsite(nameWebsite: value);
+            }
           },
           items: _controller
               .listStringNameWebsite()

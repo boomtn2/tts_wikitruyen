@@ -160,7 +160,10 @@ class TabViewFavorite extends StatelessWidget {
                     width: 10,
                   ),
                   InkWell(
-                    onTap: () {},
+                    onTap: () {
+                      _controller
+                          .deleteFavorite(_controller.listFavorite[index]);
+                    },
                     child: const SizedBox(
                         height: 120,
                         width: 40,
@@ -185,12 +188,19 @@ class TabViewDownload extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(
-      () => GridView.builder(
-        gridDelegate:
-            const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
-        itemCount: _controller.listDownload.length,
-        itemBuilder: (context, index) =>
-            BookCard(book: _controller.listDownload[index]),
+      () => Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2),
+          itemCount: _controller.listDownload.length,
+          itemBuilder: (context, index) => BookCard(
+            book: _controller.listDownload[index],
+            voidcallback: () {
+              _controller.reloadBookOffline();
+            },
+          ),
+        ),
       ),
     );
   }

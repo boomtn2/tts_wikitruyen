@@ -60,7 +60,7 @@ class _BookInfoPageOfflineState extends State<BookInfoPageOffline> {
                         authorTag: authorTag,
                         imgTag: imgTag,
                         titleTag: titleTag,
-                        book: _controller.book,
+                        book: _controller.book.value,
                       ),
                       const DividerC(),
                       const SectionTitle(title: 'Mô tả:'),

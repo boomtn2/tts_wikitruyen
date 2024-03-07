@@ -31,8 +31,7 @@ class TagsSelected extends StatelessWidget {
                             ),
                             Text(
                               e.nametag,
-                              style: const TextStyle(
-                                  color: Colors.black, fontSize: 12),
+                              style: const TextStyle(fontSize: 12),
                             )
                           ],
                         ),

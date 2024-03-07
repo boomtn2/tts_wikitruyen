@@ -149,9 +149,9 @@ class WVController extends GetxController {
 
   Future moTaFCT() async {
     try {
-      final jsonString = await controller.runJavaScriptReturningResult(
+      String jsonString = await controller.runJavaScriptReturningResult(
           _website.jsleak.jsDescription) as String;
-      moTa.value = jsonString.trim();
+      moTa.value = jsonString.replaceAll(r"\n\n", r'\n');
     } catch (e) {
       if (kDebugMode) {
         print(e);

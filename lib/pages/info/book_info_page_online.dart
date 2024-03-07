@@ -67,7 +67,7 @@ class _BookInfoPageOnlineState extends State<BookInfoPageOnline> {
                               authorTag: authorTag,
                               imgTag: imgTag,
                               titleTag: titleTag,
-                              book: _controller.book,
+                              book: _controller.book.value,
                             ),
                             const DividerC(),
                             const SectionTitle(title: 'Mô tả:'),
@@ -113,7 +113,8 @@ class ItemListBookSame extends StatelessWidget {
                 return BookListItem(
                   book: _controller.listBookSame[index],
                   funtionOption: () {
-                    _controller.book = _controller.listBookSame[index];
+                    DataPush.pushBook(book: _controller.listBookSame[index]);
+                    _controller.isSetFist = false;
                     _controller.initOnline();
                   },
                   optionFull: false,

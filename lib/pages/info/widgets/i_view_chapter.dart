@@ -19,37 +19,7 @@ class IViewChapter extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                _controllerTTS.chapter.value.linkPre.compareTo('') == 0
-                    ? const SizedBox.shrink()
-                    : IconButton(
-                        onPressed: () {
-                          _controllerTTS.preLoad();
-                        },
-                        icon: const Icon(Icons.arrow_circle_left_outlined),
-                      ),
-                Expanded(
-                  child: Title(
-                      color: Colors.black,
-                      child: Text(
-                        _controllerTTS.chapter.value.title,
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                        textAlign: TextAlign.center,
-                      )),
-                ),
-                _controllerTTS.chapter.value.linkNext.compareTo('') == 0
-                    ? const SizedBox.shrink()
-                    : IconButton(
-                        onPressed: () {
-                          _controllerTTS.skipTTS();
-                        },
-                        icon: const Icon(Icons.arrow_circle_right_outlined),
-                      ),
-              ],
-            ),
+            _controller.isModeOffline.value ? barOffline() : barOnline(),
             const Divider(),
             _controller.isLoadListChapter.value
                 ? const LoadingWidget()
@@ -57,6 +27,65 @@ class IViewChapter extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget barOffline() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.max,
+      children: [
+        const SizedBox.shrink(),
+        Expanded(
+          child: Title(
+              color: Colors.black,
+              child: Text(
+                _controllerTTS.chapter.value.title,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+                textAlign: TextAlign.center,
+              )),
+        ),
+        IconButton(
+          onPressed: () {
+            _controllerTTS.skipTTS();
+          },
+          icon: const Icon(Icons.arrow_circle_right_outlined),
+        ),
+      ],
+    );
+  }
+
+  Widget barOnline() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.max,
+      children: [
+        Uri.tryParse(_controllerTTS.chapter.value.linkPre) == null
+            ? const SizedBox.shrink()
+            : IconButton(
+                onPressed: () {
+                  _controllerTTS.preLoad();
+                },
+                icon: const Icon(Icons.arrow_circle_left_outlined),
+              ),
+        Expanded(
+          child: Title(
+              color: Colors.black,
+              child: Text(
+                _controllerTTS.chapter.value.title,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+                textAlign: TextAlign.center,
+              )),
+        ),
+        Uri.tryParse(_controllerTTS.chapter.value.linkNext) == null
+            ? const SizedBox.shrink()
+            : IconButton(
+                onPressed: () {
+                  _controllerTTS.skipTTS();
+                },
+                icon: const Icon(Icons.arrow_circle_right_outlined),
+              ),
+      ],
     );
   }
 }

@@ -15,7 +15,7 @@ import '../../services/network/network.dart';
 import 'tts/enum_state.dart';
 
 class BookInfoController extends GetxController {
-  late Book book;
+  Rx<Book> book = Book.none().obs;
   Rx<String> nameBook = ''.obs;
   Rx<BookInfo> bookInfo = BookInfo(theLoai: {}, moTa: '', dsChuong: {}).obs;
   Rx<StatusLoading> statusLoading = StatusLoading.loading.obs;
@@ -41,6 +41,7 @@ class BookInfoController extends GetxController {
   RxInt countDownload = 0.obs;
   Rx<StatusDownload> statusDownload = StatusDownload.stop.obs;
   Client client = Client();
+  bool isDownloaded = false;
 
   BookInfoController() {
     isModeOffline.value = DataPush.getModeIsOffline();
@@ -50,18 +51,18 @@ class BookInfoController extends GetxController {
   }
 
   void initOffline() async {
-    book = DataPush.getBook();
+    book.value = DataPush.getBook();
     controllerTTS.initInfoTTS();
     isLoadListChapter.value = true;
     bookInfo.value =
-        await DatabaseHelper.internal().getBookInfoOffline(book: book);
+        await DatabaseHelper.internal().getBookInfoOffline(book: book.value);
 
     String keyNext = bookInfo.value.dsChuong.isNotEmpty
         ? bookInfo.value.dsChuong.entries.first.value
         : '';
 
     controllerTTS.setInputLocal(
-        id: book.id,
+        id: book.value.id,
         keyChapter: keyNext,
         lschapter: bookInfo.value.dsChuong,
         text: bookInfo.value.moTa,
@@ -84,7 +85,7 @@ class BookInfoController extends GetxController {
         try {
           chapterDownload.value.linkChapter =
               Uri.parse(chapterDownload.value.linkNext).toString();
-          await Future.delayed(const Duration(seconds: 3));
+          await Future.delayed(const Duration(seconds: 2));
           await dowLoad();
         } catch (e) {
           statusDownload.value = StatusDownload.stop;
@@ -93,13 +94,24 @@ class BookInfoController extends GetxController {
     }
   }
 
+  Future<Chapter?> isBookDownloaded() async {
+    BookInfo bInfo =
+        await DatabaseHelper.internal().getBookInfoOffline(book: book.value);
+
+    if (bInfo.dsChuong.isNotEmpty) {
+      String link = await DatabaseHelper.internal().getLinkChapterOffline(
+          id: book.value.id, nChapter: bInfo.dsChuong.entries.last.value);
+      return _loadChapterOnline(path: link, html: _website.chapterhtml);
+    }
+  }
+
   Future<bool> _saveLocalOffline() async {
     final sqlite = DatabaseHelper.internal();
     int reponse =
-        await sqlite.insertBookOffline(item: bookInfo.value, book: book);
+        await sqlite.insertBookOffline(item: bookInfo.value, book: book.value);
 
     if (reponse == 0) {
-      reponse = await sqlite.daTonTai(book.id, sqlite.tableBook);
+      reponse = await sqlite.daTonTai(book.value.id, sqlite.tableBook);
       if (reponse == 0) {
         messError = 'Khởi tạo database tablebook lỗi!';
         return false;
@@ -107,7 +119,7 @@ class BookInfoController extends GetxController {
     }
 
     int chapterResponse = await sqlite.insertChapter(
-        id: book.id,
+        id: book.value.id,
         nameChapter: chapterDownload.value.title,
         text: chapterDownload.value.text,
         linkChapter: chapterDownload.value.linkChapter);
@@ -143,23 +155,30 @@ class BookInfoController extends GetxController {
 
   bool isSetFist = false;
   void initOnline() async {
-    book = DataPush.getBook();
+    isSetFist = false;
+    bookInfo.value = BookInfo(theLoai: {}, moTa: '', dsChuong: {});
+    book.value = DataPush.getBook();
     controllerTTS.initInfoTTS();
+    _checkDownload();
     if (isModeOffline.value == false) {
       _initWebsite();
-      controllerWV.loadRequest(book.bookPath);
+      getListBookSameOnline();
+      controllerWV.loadRequest(book.value.bookPath);
       controllerWV.moTa.listen((p0) {
         bookInfo.value = controllerWV.getBookInfo();
       });
       controllerWV.listChuong.listen((p0) {
         if (isSetFist == false) {
           isSetFist = true;
-          chapterDownload.value = Chapter(
-              text: '',
-              title: p0.entries.first.value,
-              linkChapter: p0.entries.first.key,
-              linkNext: '',
-              linkPre: '');
+          if (isDownloaded == false) {
+            chapterDownload.value = Chapter(
+                text: '',
+                title: p0.entries.first.value,
+                linkChapter: p0.entries.first.key,
+                linkNext: '',
+                linkPre: '');
+          }
+
           controllerTTS.setInput(
               chapterBook: Chapter(
                   text: controllerWV.moTa.value,
@@ -173,10 +192,18 @@ class BookInfoController extends GetxController {
     } else {}
   }
 
+  void _checkDownload() async {
+    final chapterDownloaded = await isBookDownloaded();
+    if (chapterDownloaded != null) {
+      chapterDownload.value = chapterDownloaded;
+      isDownloaded = true;
+    }
+  }
+
   void _initWebsite() {
     final listWebsite = HiveServices.getListWebsite();
     for (var element in listWebsite.listWebsite) {
-      if (book.bookPath.contains(element.domain)) {
+      if (book.value.bookPath.contains(element.domain)) {
         _website = element;
         if (kDebugMode) print(_website.toMap());
       }
@@ -184,7 +211,7 @@ class BookInfoController extends GetxController {
   }
 
   void showDialog() {
-    if (book.history != null) {
+    if (book.value.history != null) {
       Get.dialog(DialogCustom(
         right: () {
           Get.back();
@@ -192,7 +219,7 @@ class BookInfoController extends GetxController {
         left: () {
           Get.back();
         },
-        mess: book.history!.nameChapter,
+        mess: book.value.history!.nameChapter,
       ));
     }
   }
@@ -203,16 +230,25 @@ class BookInfoController extends GetxController {
   }
 
   void getListBookSameOnline() async {
-    // WikiBaseClient wiki = WikiBaseClient()
-    //   ..url = PathWiki.search
-    //   ..param = {'qs': 1, 'q': book.bookName};
-    // final repo = await network.excute(router: wiki);
+    TagSearch tag = _website.grsearchname.tags.first;
+    tag.codetag = book.value.bookName;
+    client.baseURLClient = _website.grsearchname.linkSearch(chooseTags: [tag]);
 
-    // if (repo is dio.Response) {
-    //   listBookSame.addAll(DecoreWikiTruyen.getListBook(response: repo));
-    // } else {
-    //   handleError(error: repo);
-    // }
+    final repo = await network.excute(router: client);
+
+    if (repo is dio.Response) {
+      listBookSame.value = HTMLHelper().getListBookHtml(
+          response: repo,
+          querryList: _website.listbookhtml.querryList,
+          queryText: _website.listbookhtml.queryText,
+          queryAuthor: _website.listbookhtml.queryAuthor,
+          queryview: _website.listbookhtml.queryview,
+          queryScr: _website.listbookhtml.queryScr,
+          queryHref: _website.listbookhtml.queryHref,
+          domain: _website.listbookhtml.domain);
+    } else {
+      handleError(error: repo);
+    }
   }
 
   void selectedChapterOnline(String title, String link) async {
@@ -233,10 +269,10 @@ class BookInfoController extends GetxController {
     isChapter.value = true;
     isLoadListChapter.value = true;
     final chapter = await DatabaseHelper.internal()
-        .getTextChapterOffline(id: book.id, nChapter: key);
+        .getTextChapterOffline(id: book.value.id, nChapter: key);
     if (chapter.compareTo('') != 0) {
       controllerTTS.setInputLocal(
-          id: book.id,
+          id: book.value.id,
           keyChapter: key,
           lschapter: bookInfo.value.dsChuong,
           text: chapter,
@@ -249,12 +285,15 @@ class BookInfoController extends GetxController {
   }
 
   void saveHistoryBook() {
-    book.history =
+    book.value.history =
         History(nameChapter: nameChapterNow(), chapterPath: '', text: '');
 
-    DatabaseHelper.internal().insertBookHistory(book: book);
+    DatabaseHelper.internal().insertBookHistory(book: book.value);
     DatabaseHelper.internal().insertHistory(
-        id: book.id, linkChapter: '', nameChapter: nameChapterNow(), text: '');
+        id: book.value.id,
+        linkChapter: '',
+        nameChapter: nameChapterNow(),
+        text: '');
   }
 
   String nameChapterNow() {
@@ -268,17 +307,22 @@ class BookInfoController extends GetxController {
   void saveFavorite() async {
     if (isFavorite.value == false) {
       final int response =
-          await DatabaseHelper.internal().insertBookFavorite(book: book);
+          await DatabaseHelper.internal().insertBookFavorite(book: book.value);
       if (response != 0) {
         isFavorite.value = true;
       }
-      Get.snackbar('Lưu yêu thích:', response != 0 ? 'Thành công' : 'Thất bại');
+    } else {
+      int responsedelete =
+          await DatabaseHelper.internal().deleteBookFavorite(book.value.id);
+      if (responsedelete != 0) {
+        isFavorite.value = false;
+      }
     }
   }
 
   void checkFavorite() async {
     final sql = DatabaseHelper.internal();
-    int response = await sql.daTonTai(book.id, sql.tableBookFavorite);
+    int response = await sql.daTonTai(book.value.id, sql.tableBookFavorite);
     if (response != 0) {
       isFavorite.value = true;
     } else {

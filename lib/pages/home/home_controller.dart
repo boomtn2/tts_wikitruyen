@@ -1,10 +1,15 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:ffi';
 
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+
 import 'package:tts_wikitruyen/html/html.dart';
 import 'package:tts_wikitruyen/pages/data_push.dart';
 
 import 'package:tts_wikitruyen/res/routers/app_router_name.dart';
+import 'package:tts_wikitruyen/res/string_link/string_link.dart';
 
 import 'package:tts_wikitruyen/services/local/local.dart';
 import 'package:tts_wikitruyen/services/network/client_netword.dart';
@@ -30,15 +35,16 @@ class HomeController extends GetxController {
   RxList<Book> listHistory = <Book>[].obs;
   RxList<Book> listFavorite = <Book>[].obs;
   RxList<Book> listDownload = <Book>[].obs;
+  RxList<Book> listYoutube = <Book>[].obs;
 
   NetworkExecuter network = NetworkExecuter();
 
   RxBool isError = false.obs;
 
   ErrorNetWork? errorNetWork;
-
-  ListWebsite _listWebsite = ListWebsite.none();
-  Website _websiteNow = Website.none();
+  RxBool isModeDark = false.obs;
+  Rx<ListWebsite> listWebsite = ListWebsite.none().obs;
+  Rx<Website> websiteNow = Website.none().obs;
   Client client = Client();
   QuerryGetListBookHTML _querryGetListBookHTML = QuerryGetListBookHTML.none();
   HomeController() {
@@ -51,6 +57,7 @@ class HomeController extends GetxController {
         case 0:
           break;
         case 1:
+          _initYoutubePage();
           break;
         case 2:
           _initSQLite();
@@ -60,21 +67,71 @@ class HomeController extends GetxController {
     }
   }
 
+  _initYoutubePage() async {
+    client.baseURLClient = linkYoutube;
+    final response = await network.excute(router: client);
+    if (response is dio.Response) {
+      try {
+        List json = jsonDecode(response.data) as List;
+        List<Book> lis = [];
+        for (var element in json) {
+          Book book = Book.json(element);
+          History history = History.json(element);
+          book.history = history;
+          lis.add(book);
+        }
+
+        listYoutube.value = lis;
+      } catch (e) {
+        if (kDebugMode) {
+          print("fct: _initYoutubePage {$e}");
+        }
+      }
+    }
+  }
+
   _initSQLite() async {
     listHistory.value = await DatabaseHelper.internal().getListBookHistory();
     listFavorite.value = await DatabaseHelper.internal().getListBookFavorite();
     listDownload.value = await DatabaseHelper.internal().getListBookOffline();
   }
 
-  init() async {
+  void deleteFavorite(Book bookfvt) async {
+    int rp = await DatabaseHelper.internal().deleteBookFavorite(bookfvt.id);
+    if (rp != 0) {
+      Get.snackbar('Bỏ theo dõi:', bookfvt.bookName);
+      listFavorite.value =
+          await DatabaseHelper.internal().getListBookFavorite();
+    }
+  }
+
+  void reloadBookOffline() async {
+    listDownload.value = await DatabaseHelper.internal().getListBookOffline();
+  }
+
+  Future init() async {
     isLoading.value = true;
     isError.value = false;
     errorNetWork = null;
 
-    _listWebsite = HiveServices.getListWebsite();
-    _websiteNow = _listWebsite.listWebsite.first;
-    _querryGetListBookHTML = _websiteNow.listbookhtml;
-    listTaghot.value = _websiteNow.listtaghot;
+    listWebsite.value = HiveServices.getListWebsite();
+    websiteNow.value = listWebsite.value.listWebsite.first;
+    _querryGetListBookHTML = websiteNow.value.listbookhtml;
+    listTaghot.value = websiteNow.value.listtaghot;
+
+    await _getDataTagHot(index: 0);
+    isLoading.value = false;
+  }
+
+  void selectWebsite(int index) async {
+    websiteNow.value = listWebsite.value.listWebsite[index];
+    isLoading.value = true;
+    isError.value = false;
+    errorNetWork = null;
+
+    listWebsite.value = HiveServices.getListWebsite();
+    _querryGetListBookHTML = websiteNow.value.listbookhtml;
+    listTaghot.value = websiteNow.value.listtaghot;
 
     await _getDataTagHot(index: 0);
     isLoading.value = false;
@@ -85,7 +142,7 @@ class HomeController extends GetxController {
     if (listTaghot.isNotEmpty && index < listTaghot.length) {
       indexHotTag.value = index;
       start = 0;
-      await _getDataURL(_websiteNow.listtaghot[index].link);
+      await _getDataURL(websiteNow.value.listtaghot[index].link);
     }
     isLoading.value = false;
   }

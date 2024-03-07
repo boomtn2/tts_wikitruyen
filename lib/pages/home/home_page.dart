@@ -6,11 +6,13 @@ import 'package:tts_wikitruyen/res/routers/app_router_name.dart';
 
 import 'pages/i_history_page.dart';
 import 'pages/i_home_page.dart';
+import 'pages/i_youtube_page.dart';
 
 List<Widget> pages = [
   BodyHome(),
-  Container(),
+  IYoutubePage(),
   IHistoryPage(),
+  Container(),
 ];
 
 class HomePage extends StatefulWidget {
@@ -29,16 +31,24 @@ class _HomePageState extends State<HomePage> {
         appBar: AppBar(
           title: const Text("AUDIO"),
           actions: [
+            Switch(
+              value: _controller.isModeDark.value,
+              onChanged: (value) {
+                _controller.isModeDark.value = value;
+
+                Get.isDarkMode
+                    ? Get.changeThemeMode(ThemeMode.light)
+                    : Get.changeThemeMode(ThemeMode.dark);
+              },
+            ),
             InkWell(
               onTap: () => Get.toNamed(AppRoutesName.search),
               child: const Card(
                 child: Padding(
                   padding: EdgeInsets.all(8.0),
                   child: Row(mainAxisSize: MainAxisSize.min, children: [
-                    Text(
-                      "Tìm Kiếm",
-                    ),
                     Icon(
+                      color: Colors.black,
                       Icons.search,
                       size: 30,
                     ),

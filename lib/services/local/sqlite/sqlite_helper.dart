@@ -376,6 +376,20 @@ class DatabaseHelper {
     }
   }
 
+  Future<String> getLinkChapterOffline(
+      {required String id, required String nChapter}) async {
+    try {
+      final dataList = await _getDB(tableChapter,
+          columns: [linkChapter],
+          where: '$columnId = ? AND $nameChapter Like ?',
+          whereArgs: [id, nChapter]);
+      String text = '${dataList.first[linkChapter]}';
+      return text;
+    } catch (e) {
+      return '';
+    }
+  }
+
   Future getALLChapterOffline() async {
     await _getDB(tableChapter);
   }
