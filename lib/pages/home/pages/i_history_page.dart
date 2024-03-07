@@ -3,52 +3,50 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tts_wikitruyen/pages/widgets/itembooklist.dart';
 
-import '../../../models/book.dart';
+import '../../widgets/bookcard.dart';
 import '../home_controller.dart';
 
 // ignore: must_be_immutable
 class IHistoryPage extends StatelessWidget {
   IHistoryPage({super.key});
   final _controller = Get.find<HomeController>();
-  int index = 0;
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.max,
-      children: [
-        SizedBox(
-          height: 40,
-          width: Get.size.width,
-          child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: _controller.tagHistory
-                  .map((e) => ButtonTagHotSreach(
-                        title: e,
-                        index: index++,
-                      ))
-                  .toList()),
-        ),
-        Expanded(
-          child: DefaultTabController(
-            initialIndex: 0,
-            length: 3,
-            child: TabBarView(
-              children: <Widget>[
-                Obx(
-                  () => ListView.builder(
-                    itemCount: _controller.listHistory.length,
-                    itemBuilder: (context, index) =>
-                        BookListItem(book: _controller.listHistory[index]),
-                  ),
+    return DefaultTabController(
+        initialIndex: _controller.indexTagHistory.value,
+        length: 3,
+        child: Builder(builder: (context) {
+          DefaultTabController.of(context).addListener(() {
+            _controller.indexTagHistory.value =
+                DefaultTabController.of(context).index;
+          });
+
+          return Column(
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              SizedBox(
+                  height: 40,
+                  width: Get.size.width,
+                  child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _controller.tagHistory.length,
+                      itemBuilder: (context, index) => ButtonTagHotSreach(
+                            title: _controller.tagHistory[index],
+                            index: index,
+                          ))),
+              Expanded(
+                child: TabBarView(
+                  children: <Widget>[
+                    TabViewHistory(),
+                    TabViewFavorite(),
+                    TabViewDownload()
+                  ],
                 ),
-                const Text('Màn 2'),
-                const Text('Màn 3'),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
+              ),
+            ],
+          );
+        }));
   }
 }
 
@@ -68,6 +66,7 @@ class ButtonTagHotSreach extends StatelessWidget {
         onTap: () {
           if (_controller.indexTagHistory.value != index) {
             _controller.indexTagHistory.value = index;
+            DefaultTabController.of(context).index = index;
           }
         },
         child: Container(
@@ -100,81 +99,98 @@ class ButtonTagHotSreach extends StatelessWidget {
   }
 }
 
-class ItemBook extends StatelessWidget {
-  const ItemBook({super.key, required this.book});
-  final Book book;
+class TabViewHistory extends StatelessWidget {
+  TabViewHistory({super.key});
+  final _controller = Get.find<HomeController>();
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () => Get.find<HomeController>().nextToBookInfor(book: book),
-      child: Banner(
-        location: BannerLocation.bottomEnd,
-        color: Colors.blue,
-        message: 'Hôm nay',
-        child: Card(
-          color: const Color.fromARGB(255, 228, 225, 225),
-          child: Padding(
-            padding: const EdgeInsets.all(2.0),
-            child: SizedBox(
-              height: 120,
-              width: Get.size.width,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
+    return Obx(
+      () => ListView.builder(
+        itemCount: _controller.listHistory.length,
+        itemBuilder: (context, index) =>
+            BookListItem(book: _controller.listHistory[index]),
+      ),
+    );
+  }
+}
+
+class TabViewFavorite extends StatelessWidget {
+  TabViewFavorite({super.key});
+  final _controller = Get.find<HomeController>();
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Expanded(
+                child: Card(
+                    color: Colors.white,
+                    child: Center(
+                        child: Text(
+                      'Truyện',
+                      style: TextStyle(color: Colors.black),
+                    )))),
+            Card(
+                color: Colors.red,
+                child: SizedBox(
+                    width: 40,
+                    child: Center(
+                        child: Text(
+                      'Xóa',
+                      style: TextStyle(color: Colors.white),
+                    ))))
+          ],
+        ),
+        Obx(
+          () => Expanded(
+            child: ListView.builder(
+              itemCount: _controller.listFavorite.length,
+              itemBuilder: (context, index) => Row(
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        image: DecorationImage(
-                          image: NetworkImage(
-                            book.imgFullPath,
-                          ),
-                          fit: BoxFit.fill,
-                          onError: (exception, stackTrace) {},
-                        )),
-                    width: Get.size.width / 3,
+                  Expanded(
+                    child: BookListItem(
+                      book: _controller.listFavorite[index],
+                      optionFull: false,
+                    ),
                   ),
                   const SizedBox(
-                    width: 5,
+                    width: 10,
                   ),
-                  Expanded(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          book.bookName,
-                          style: const TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.bold),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        Text(
-                          book.bookAuthor,
-                          style: const TextStyle(
-                              color: Colors.black,
-                              fontStyle: FontStyle.italic,
-                              fontSize: 12),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        Text(
-                          '${book.history?.nameChapter}',
-                          style: const TextStyle(
-                              color: Colors.blue,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
+                  InkWell(
+                    onTap: () {},
+                    child: const SizedBox(
+                        height: 120,
+                        width: 40,
+                        child: Icon(
+                          Icons.favorite,
+                          color: Colors.red,
+                        )),
                   ),
                 ],
               ),
             ),
           ),
         ),
+      ],
+    );
+  }
+}
+
+class TabViewDownload extends StatelessWidget {
+  TabViewDownload({super.key});
+  final _controller = Get.find<HomeController>();
+  @override
+  Widget build(BuildContext context) {
+    return Obx(
+      () => GridView.builder(
+        gridDelegate:
+            const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
+        itemCount: _controller.listDownload.length,
+        itemBuilder: (context, index) =>
+            BookCard(book: _controller.listDownload[index]),
       ),
     );
   }

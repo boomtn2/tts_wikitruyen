@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
+
+import 'package:get/get.dart';
 import 'package:tts_wikitruyen/pages/widgets/image_networkcustom.dart';
 import 'package:tts_wikitruyen/res/const_app.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../model/model.dart';
+import '../../res/routers/app_router_name.dart';
+import '../data_push.dart';
 import 'loading_widget.dart';
 
 class BookCard extends StatelessWidget {
-  final String img;
+  final Book book;
 
   BookCard({
     super.key,
-    required this.img,
+    required this.book,
   });
   static const uuid = Uuid();
   final String imgTag = uuid.v4();
@@ -18,28 +23,45 @@ class BookCard extends StatelessWidget {
   final String authorTag = uuid.v4();
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 120.0,
-      child: Card(
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(10.0)),
-        ),
-        elevation: 4.0,
-        child: InkWell(
-          borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-          onTap: () {},
-          child: ClipRRect(
-            borderRadius: const BorderRadius.all(
-              Radius.circular(10.0),
+    return InkWell(
+      borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+      onTap: () {
+        DataPush.pushTagHero(
+            {'imgTag': imgTag, 'titleTag': titleTag, 'authorTag': authorTag});
+        DataPush.pushBook(book: book);
+        DataPush.isStateOffline();
+        Get.toNamed(AppRoutesName.bookInfo);
+      },
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Expanded(
+            child: Banner(
+              location: BannerLocation.bottomStart,
+              message: 'Đã Tải',
+              child: ClipRRect(
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(10.0),
+                ),
+                child: Hero(
+                    tag: imgTag,
+                    child: ImageNetWorkCustom(
+                        link: book.imgPath,
+                        pathAssetImg: pathAssetsError,
+                        widgetLoading: const LoadingWidget())),
+              ),
             ),
-            child: Hero(
-                tag: imgTag,
-                child: ImageNetWorkCustom(
-                    link: img,
-                    pathAssetImg: pathAssetsError,
-                    widgetLoading: const LoadingWidget())),
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Text(
+              book.bookName,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
       ),
     );
   }

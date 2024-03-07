@@ -14,7 +14,13 @@ class ReponseSearchPage extends StatelessWidget {
     return Obx(
       () => Column(
         mainAxisSize: MainAxisSize.max,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          ElevatedButton(
+              onPressed: () {
+                DefaultTabController.of(context).index = 0;
+              },
+              child: const Icon(Icons.search)),
           TagsSelected(),
           _controller.isLoading.value
               ? const LoadingWidget()

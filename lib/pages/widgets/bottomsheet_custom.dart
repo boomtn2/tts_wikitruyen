@@ -30,7 +30,7 @@ Widget bottomSheetCustom(
 
 Widget bottomSheetChapter(
     {required dynamic indexChoose,
-    required List<Map<dynamic, dynamic>> data,
+    required Map<dynamic, dynamic> data,
     required Function function}) {
   return Card(
     color: Colors.black,
@@ -39,14 +39,14 @@ Widget bottomSheetChapter(
       child: GridView.count(
           crossAxisCount: 2,
           childAspectRatio: 2 / 0.5,
-          children: data
+          children: data.entries
               .map(
                 (e) => InkWell(
                     child: Card(
                       color: Colors.brown,
                       child: Center(
                         child: Text(
-                          '${e.keys}',
+                          '${e.key}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(

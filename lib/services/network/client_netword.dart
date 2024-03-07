@@ -1,33 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 
-import 'package:tts_wikitruyen/services/wiki_truyen/path_wiki.dart';
-
-class WikiBaseClient extends BaseClientGenerator {
-  final String _baseURL = PathWiki.BASEURL_Wiki;
-  String url = '';
-  String methodWiki = "Get";
-  Map<String, dynamic>? param;
-  Map<String, dynamic>? headerWiki;
-  dynamic bodyWiki;
-  @override
-  String get baseURL => _baseURL;
-
-  @override
-  get body => bodyWiki;
-
-  @override
-  Map<String, dynamic>? get header => headerWiki;
-
-  @override
-  String get method => methodWiki;
-
-  @override
-  String get path => url;
-
-  @override
-  Map<String, dynamic>? get queryParameters => param;
-}
-
 class Client extends BaseClientGenerator {
   String baseURLClient = '';
   String url = '';

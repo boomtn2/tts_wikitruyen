@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'widgets/item_reponse_search_page.dart';
 import 'widgets/item_search_page.dart';
+import 'widgets/widget_select_website.dart';
 
 class SearchPage extends StatelessWidget {
   const SearchPage({super.key});
@@ -14,6 +15,9 @@ class SearchPage extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Tìm kiếm'),
+          actions: [
+            WidgetSelectWebsite(),
+          ],
         ),
         body: TabBarView(
           children: <Widget>[

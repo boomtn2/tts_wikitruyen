@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 class AppStringNetWork {
   static const String success = 'success';
   static const String bad_request_error = 'bad_request_error';

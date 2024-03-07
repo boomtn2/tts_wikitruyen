@@ -1,38 +1,46 @@
-import 'package:get/get.dart';
-import 'package:tts_wikitruyen/models/book.dart';
+import 'dart:async';
 
-import 'package:tts_wikitruyen/models/tag_custom.dart';
+import 'package:get/get.dart';
+import 'package:tts_wikitruyen/html/html.dart';
+import 'package:tts_wikitruyen/pages/data_push.dart';
+
 import 'package:tts_wikitruyen/res/routers/app_router_name.dart';
 
-import 'package:dio/dio.dart' as dio;
-import 'package:tts_wikitruyen/services/local/hive/hive_service.dart';
+import 'package:tts_wikitruyen/services/local/local.dart';
 import 'package:tts_wikitruyen/services/network/client_netword.dart';
+
 import 'package:tts_wikitruyen/services/network/network_excute.dart';
 import 'package:tts_wikitruyen/services/network/untils/untils.dart';
-import 'package:tts_wikitruyen/services/gist_data/strings_link_connection.dart';
-import 'package:tts_wikitruyen/services/wiki_truyen/decore_wikitruyen.dart';
-import 'package:tts_wikitruyen/services/wiki_truyen/path_wiki.dart';
 
-import '../../services/gist_data/decore_gist.dart';
+import '../../model/model.dart';
+import 'package:dio/dio.dart' as dio;
 
 class HomeController extends GetxController {
   RxList<Book> listBooks = <Book>[].obs;
   RxInt currenPage = 0.obs;
-  RxList<TagCustom> hotTags = <TagCustom>[].obs;
+
   RxInt indexHotTag = 0.obs;
+  RxList<TagHot> listTaghot = <TagHot>[].obs;
   RxBool isLoading = false.obs;
   RxBool isLoadMore = false.obs;
   int start = 0;
 
-  List<String> tagHistory = ['Hôm nay', 'Yêu Thích', 'Tác Giả Theo Dõi'];
+  List<String> tagHistory = ['Hôm nay', 'Yêu Thích', 'Tải Về'];
   RxInt indexTagHistory = 0.obs;
   RxList<Book> listHistory = <Book>[].obs;
+  RxList<Book> listFavorite = <Book>[].obs;
+  RxList<Book> listDownload = <Book>[].obs;
 
   NetworkExecuter network = NetworkExecuter();
 
   RxBool isError = false.obs;
 
   ErrorNetWork? errorNetWork;
+
+  ListWebsite _listWebsite = ListWebsite.none();
+  Website _websiteNow = Website.none();
+  Client client = Client();
+  QuerryGetListBookHTML _querryGetListBookHTML = QuerryGetListBookHTML.none();
   HomeController() {
     init();
   }
@@ -45,27 +53,60 @@ class HomeController extends GetxController {
         case 1:
           break;
         case 2:
+          _initSQLite();
           break;
       }
       currenPage.value = indexPage;
     }
   }
 
+  _initSQLite() async {
+    listHistory.value = await DatabaseHelper.internal().getListBookHistory();
+    listFavorite.value = await DatabaseHelper.internal().getListBookFavorite();
+    listDownload.value = await DatabaseHelper.internal().getListBookOffline();
+  }
+
   init() async {
+    isLoading.value = true;
     isError.value = false;
     errorNetWork = null;
-    final git = Client()..baseURLClient = StringLinkConnection.hotTags;
-    var gistReponse = await network.excute(router: git);
-    if (gistReponse is dio.Response) {
-      hotTags.value = DecoreGist.listTagCustom(response: gistReponse);
-      if (hotTags.isNotEmpty) {
-        indexHotTag.value = 0;
-        getListBooks();
-        start = 0;
-      }
-    } else {
-      handleError(error: gistReponse);
+
+    _listWebsite = HiveServices.getListWebsite();
+    _websiteNow = _listWebsite.listWebsite.first;
+    _querryGetListBookHTML = _websiteNow.listbookhtml;
+    listTaghot.value = _websiteNow.listtaghot;
+
+    await _getDataTagHot(index: 0);
+    isLoading.value = false;
+  }
+
+  Future _getDataTagHot({required int index}) async {
+    isLoading.value = true;
+    if (listTaghot.isNotEmpty && index < listTaghot.length) {
+      indexHotTag.value = index;
+      start = 0;
+      await _getDataURL(_websiteNow.listtaghot[index].link);
     }
+    isLoading.value = false;
+  }
+
+  Future _getDataURL(String url) async {
+    client.baseURLClient = url;
+    final reponse = await network.excute(router: client);
+    if (reponse is dio.Response) {
+      listBooks.value = HTMLHelper().getListBookHtml(
+          response: reponse,
+          querryList: _querryGetListBookHTML.querryList,
+          queryText: _querryGetListBookHTML.queryText,
+          queryAuthor: _querryGetListBookHTML.queryAuthor,
+          queryview: _querryGetListBookHTML.queryview,
+          queryScr: _querryGetListBookHTML.queryScr,
+          queryHref: _querryGetListBookHTML.queryHref,
+          domain: _querryGetListBookHTML.domain);
+    } else if (reponse is ErrorNetWork) {
+      isError.value = false;
+      errorNetWork = reponse;
+    } else {}
   }
 
   void handleError({required Object error}) {
@@ -77,48 +118,41 @@ class HomeController extends GetxController {
 
   void selectTag({required int indexTag}) {
     if (isLoading.value == false) {
-      indexHotTag.value = indexTag;
-
-      start = 0;
-      getListBooks();
+      _getDataTagHot(index: indexTag);
     }
   }
 
   void loadMoreItems() async {
-    isLoadMore.value = true;
-    hotTags[indexHotTag.value].params['start'] = '${start += 20}';
-    await loading(isLoadNew: false);
-    isLoadMore.value = false;
-  }
-
-  void getListBooks() async {
-    isLoading.value = true;
-
-    //param
-    hotTags[indexHotTag.value].params['start'] = '$start';
-    await loading(isLoadNew: true);
-    isLoading.value = false;
-  }
-
-  Future<void> loading({required bool isLoadNew}) async {
-    WikiBaseClient wiki = WikiBaseClient()
-      ..url = PathWiki.search
-      ..param = hotTags[indexHotTag.value].params;
-    final repo = await network.excute(router: wiki);
-
-    if (repo is dio.Response) {
-      if (isLoadNew) {
-        listBooks.value = DecoreWikiTruyen.getListBook(response: repo);
-      } else {
-        listBooks.addAll(DecoreWikiTruyen.getListBook(response: repo));
-      }
-    } else {
-      handleError(error: repo);
+    if (listBooks.isNotEmpty) {
+      isLoadMore.value = true;
+      start += listTaghot[indexHotTag.value].count;
+      await _getMoreData(
+          listTaghot[indexHotTag.value].linkLoadMore(countInt: start));
+      isLoadMore.value = false;
     }
   }
 
+  Future _getMoreData(String url) async {
+    client.baseURLClient = url;
+    final reponse = await network.excute(router: client);
+    if (reponse is dio.Response) {
+      listBooks.addAll(HTMLHelper().getListBookHtml(
+          response: reponse,
+          querryList: _querryGetListBookHTML.querryList,
+          queryText: _querryGetListBookHTML.queryText,
+          queryAuthor: _querryGetListBookHTML.queryAuthor,
+          queryview: _querryGetListBookHTML.queryview,
+          queryScr: _querryGetListBookHTML.queryScr,
+          queryHref: _querryGetListBookHTML.queryHref,
+          domain: _querryGetListBookHTML.domain));
+    } else if (reponse is ErrorNetWork) {
+      isError.value = false;
+      errorNetWork = reponse;
+    } else {}
+  }
+
   void nextToBookInfor({required Book book}) {
-    Get.lazyPut(() => book, tag: 'Page BookInfo');
+    DataPush.pushBook(book: book);
 
     Get.toNamed(AppRoutesName.bookInfo);
   }

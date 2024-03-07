@@ -38,11 +38,11 @@ class NetworkCreate {
   }
 
   Future<ErrorNetWork> _handleError(DioException exception) async {
-    ErrorNetWork _error;
+    late ErrorNetWork error;
 
     switch (exception.type) {
       case DioExceptionType.badResponse:
-        _error = ErrorNetWork(
+        error = ErrorNetWork(
             code: ResponseCode.BAD_REQUEST,
             message: AppStringNetWork.bad_request_error,
             description:
@@ -50,7 +50,7 @@ class NetworkCreate {
                     'badResponse');
         break;
       case DioExceptionType.badCertificate:
-        _error = ErrorNetWork(
+        error = ErrorNetWork(
             code: ResponseCode.BadCertificate,
             message: AppStringNetWork.bad_certificate,
             description:
@@ -58,13 +58,13 @@ class NetworkCreate {
                     'badCertificate');
         break;
       case DioExceptionType.cancel:
-        _error = ErrorNetWork(
+        error = ErrorNetWork(
             code: ResponseCode.CANCEL,
             message: 'Cancel',
             description: 'Cancel');
         break;
       case DioExceptionType.connectionError:
-        _error = ErrorNetWork(
+        error = ErrorNetWork(
             code: ResponseCode.DEFAULT,
             message: AppStringNetWork.connection_error,
             description:
@@ -72,27 +72,27 @@ class NetworkCreate {
                     'connectionError');
         break;
       case DioExceptionType.connectionTimeout:
-        _error = ErrorNetWork(
+        error = ErrorNetWork(
             code: ResponseCode.CONNECT_TIMEOUT,
             message: AppStringNetWork.timeout_error,
             description: messageErrorNetWork[AppStringNetWork.timeout_error] ??
                 'connectionTimeout');
         break;
       case DioExceptionType.sendTimeout:
-        _error = ErrorNetWork(
+        error = ErrorNetWork(
             code: ResponseCode.SEND_TIMEOUT,
             message: AppStringNetWork.timeout_error,
             description: messageErrorNetWork[AppStringNetWork.timeout_error] ??
                 'sendTimeout');
         break;
       case DioExceptionType.unknown:
-        _error = ErrorNetWork(
+        error = ErrorNetWork(
             code: ResponseCode.DEFAULT,
             message: 'unknown',
             description: 'unknow');
         break;
       case DioExceptionType.receiveTimeout:
-        _error = ErrorNetWork(
+        error = ErrorNetWork(
             code: ResponseCode.RECIEVE_TIMEOUT,
             message: AppStringNetWork.timeout_error,
             description: messageErrorNetWork[AppStringNetWork.timeout_error] ??
@@ -100,6 +100,6 @@ class NetworkCreate {
         break;
     }
 
-    return _error;
+    return error;
   }
 }

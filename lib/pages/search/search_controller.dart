@@ -1,14 +1,13 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tts_wikitruyen/models/tag.dart';
-import 'package:tts_wikitruyen/services/gist_data/decore_gist.dart';
-import 'package:tts_wikitruyen/services/gist_data/strings_link_connection.dart';
-import 'package:tts_wikitruyen/services/network/client_netword.dart';
-import 'package:tts_wikitruyen/services/network/network_excute.dart';
-import 'package:tts_wikitruyen/services/wiki_truyen/decore_wikitruyen.dart';
-import 'package:tts_wikitruyen/services/wiki_truyen/path_wiki.dart';
+import 'package:tts_wikitruyen/html/html.dart';
+
+import 'package:tts_wikitruyen/services/local/hive/hive_service.dart';
+
+import '../../model/model.dart';
+import '../../services/network/network.dart';
 import 'package:dio/dio.dart' as dio;
-import '../../models/book.dart';
 
 class SearchPageController extends GetxController {
   SearchPageController() {
@@ -16,90 +15,161 @@ class SearchPageController extends GetxController {
   }
   RxList<Book> listBooks = <Book>[].obs;
   TextEditingController controllerTextSearchName = TextEditingController();
-  RxMap listTagSelected = {}.obs;
-  RxList<Tag> listTags = <Tag>[].obs;
+
   RxBool isLoading = false.obs;
   RxBool isLoadMore = false.obs;
+  bool isEnd = false;
 
-  Map<String, dynamic> querry = {};
+  RxList<GroupTagSearch> listGrTagSearch = <GroupTagSearch>[].obs;
+  RxList<TagSearch> selectedTag = <TagSearch>[].obs;
+
   NetworkExecuter network = NetworkExecuter();
+  Client client = Client();
+  ListWebsite _listWebsite = ListWebsite.none();
+  Rx<Website> websiteNow = Website.none().obs;
+  bool isSearchName = false;
   int start = 0;
+  TagSearch stSearchName = TagSearch.none();
   void init() async {
-    Client client = Client();
-    client.baseURLClient = StringLinkConnection.category;
-    var response = await network.excute(router: client);
-    if (response is dio.Response) {
-      listTags.value = DecoreGist.listTags(response: response);
-    } else {
-      handleError(error: response);
+    _listWebsite = HiveServices.getListWebsite();
+    _selectWebsite(index: 0);
+  }
+
+  void _selectWebsite({required int index}) {
+    try {
+      websiteNow.value = _listWebsite.listWebsite[index];
+      listGrTagSearch.value = websiteNow.value.listgrtag;
+      selectedTag.value = [];
+    } catch (e) {
+      if (kDebugMode) print(e);
     }
   }
 
-  void selectTag(
-      {required String name, required String param, required String querry}) {
-    if (listTagSelected[name] == null) {
-      listTagSelected.addAll({
-        name: {'param': param, 'querry': querry}
-      });
+  String getWebsiteNow() {
+    return websiteNow.value.website;
+  }
+
+  List<String> listStringNameWebsite() {
+    List<String> nameWebsite = [];
+    for (var element in _listWebsite.listWebsite) {
+      nameWebsite.add(element.website);
+    }
+
+    if (nameWebsite.isEmpty) {
+      nameWebsite = ['null'];
+    }
+    return nameWebsite;
+  }
+
+  void selectTag({required TagSearch tagSearch}) {
+    if (isTagSelected(tagSearch)) {
+      removeTagSected(tagSearch: tagSearch);
     } else {
-      listTagSelected.remove(name);
+      selectedTag.add(tagSearch);
     }
   }
 
-  WikiBaseClient wiki = WikiBaseClient();
+  void removeTagSected({required TagSearch tagSearch}) {
+    selectedTag.remove(tagSearch);
+  }
+
+  bool isTagSelected(TagSearch tagSearch) {
+    for (var element in selectedTag) {
+      if (tagSearch.codetag == element.codetag) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  void changeWebsite({required String nameWebsite}) {
+    for (int i = 0; i < _listWebsite.listWebsite.length; ++i) {
+      if (_listWebsite.listWebsite[i].website.compareTo(nameWebsite) == 0) {
+        _selectWebsite(index: i);
+        break;
+      }
+    }
+  }
+
   void loadMoreItems() async {
-    isLoadMore.value = true;
-    querry['start'] = '${start += 20}';
+    if (listBooks.isNotEmpty && listBooks.length > 4 && isEnd == false) {
+      isLoadMore.value = true;
+      try {
+        start += listGrTagSearch.first.count;
 
-    wiki.url = PathWiki.search;
-    wiki.param = querry;
-    var response = await network.excute(router: wiki);
+        if (isSearchName) {
+          client.baseURLClient = websiteNow.value.grsearchname
+              .getMoreLink(count: start, chooseTags: [stSearchName]);
+        } else {
+          client.baseURLClient = websiteNow.value.listgrtag.first
+              .getMoreLink(count: start, chooseTags: selectedTag);
+        }
 
-    if (response is dio.Response) {
-      listBooks.addAll(DecoreWikiTruyen.getListBook(response: response));
+        final response = await network.excute(router: client);
+        listBooks.addAll(_fetchDataListBookHTML(response));
+        if (listBooks.isEmpty) isEnd = true;
+      } catch (e) {
+        if (kDebugMode) print(e);
+      }
       isLoadMore.value = false;
     }
+  }
+
+  void _search() async {
+    isLoading.value = true;
+    isEnd = false;
+    start = 0;
+    if (isSearchName) {
+      client.baseURLClient =
+          websiteNow.value.grsearchname.linkSearch(chooseTags: [stSearchName]);
+    } else {
+      client.baseURLClient =
+          websiteNow.value.listgrtag.first.linkSearch(chooseTags: selectedTag);
+    }
+
+    final response = await network.excute(router: client);
+    listBooks.value = _fetchDataListBookHTML(response);
+    isLoading.value = false;
   }
 
   void searchName() async {
-    if (controllerTextSearchName.value.text.isNotEmpty) {
-      wiki.url = PathWiki.search;
-      wiki.param = {'qs': 1, 'q': "${controllerTextSearchName.value}"};
-      final repo = await network.excute(router: wiki);
-
-      if (repo is dio.Response) {
-        listBooks.value = DecoreWikiTruyen.getListBook(response: repo);
-      } else {
-        handleError(error: repo);
+    isSearchName = true;
+    try {
+      stSearchName = websiteNow.value.grsearchname.tags.first;
+      stSearchName.codetag = controllerTextSearchName.text;
+      websiteNow.value.grsearchname.linkSearch(chooseTags: [stSearchName]);
+      _search();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Tìm kiếm lỗi theo tên:{e}');
       }
     }
   }
 
-  void handleError({required Object error}) {}
+  List<Book> _fetchDataListBookHTML(dynamic response) {
+    if (response is dio.Response) {
+      if (response.statusCode == 200) {
+        final QuerryGetListBookHTML querry = websiteNow.value.listbookhtml;
+        return HTMLHelper().getListBookHtml(
+            response: response,
+            querryList: querry.querryList,
+            queryText: querry.queryText,
+            queryAuthor: querry.queryAuthor,
+            queryview: querry.queryview,
+            queryScr: querry.queryScr,
+            queryHref: querry.queryHref,
+            domain: querry.domain);
+      }
+    }
+    return [];
+  }
 
   void searchCategory() async {
-    for (var element in listTagSelected.values) {
-      String key = element['querry'];
-      List<String> listParram = ['${element['param']}'];
-
-      if (querry.isNotEmpty) {
-        List<String> temp = querry[key] ?? [];
-        if (temp.isNotEmpty) {
-          listParram.addAll(temp);
-        }
-      }
-      querry.addAll({key: listParram});
-    }
-    start = 0;
-    querry.addAll({'qs': 1, 'm': 2, 'start': 0, 'so': 4, 'y': 2024});
-
-    wiki.url = PathWiki.search;
-    wiki.param = querry;
-    var response = await network.excute(router: wiki);
-
-    if (response is dio.Response) {
-      listBooks.value = DecoreWikiTruyen.getListBook(response: response);
-      isLoadMore.value = false;
+    isSearchName = false;
+    try {
+      _search();
+    } catch (e) {
+      if (kDebugMode) print(e);
     }
   }
 }

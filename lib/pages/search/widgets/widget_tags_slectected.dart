@@ -9,35 +9,38 @@ class TagsSelected extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(
-      () => Wrap(
-        children: _controller.listTagSelected.entries
-            .map((e) => InkWell(
-                  onTap: () {
-                    _controller.listTagSelected.remove(e.key);
-                  },
-                  child: Card(
-                    color: Colors.black12,
-                    child: Padding(
-                      padding: const EdgeInsets.all(5.0),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.close,
-                            size: 15,
-                            color: Colors.red,
-                          ),
-                          Text(
-                            '${e.key}',
-                            style: const TextStyle(
-                                color: Colors.black, fontSize: 12),
-                          )
-                        ],
+      () => SizedBox(
+        height: 70,
+        child: Wrap(
+          children: _controller.selectedTag
+              .map((e) => InkWell(
+                    onTap: () {
+                      _controller.removeTagSected(tagSearch: e);
+                    },
+                    child: Card(
+                      color: Colors.black12,
+                      child: Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.close,
+                              size: 15,
+                              color: Colors.red,
+                            ),
+                            Text(
+                              e.nametag,
+                              style: const TextStyle(
+                                  color: Colors.black, fontSize: 12),
+                            )
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ))
-            .toList(),
+                  ))
+              .toList(),
+        ),
       ),
     );
   }

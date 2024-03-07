@@ -1,18 +1,18 @@
 import 'package:get/get.dart';
-import 'package:tts_wikitruyen/pages/chapter/chapter_page.dart';
 import 'package:tts_wikitruyen/pages/home/home_biding.dart';
 
 import 'package:tts_wikitruyen/pages/home/home_page.dart';
 import 'package:tts_wikitruyen/pages/info/book_biding.dart';
-import 'package:tts_wikitruyen/pages/info/book_info.dart';
+import 'package:tts_wikitruyen/pages/info/book_info_page.dart';
 import 'package:tts_wikitruyen/pages/search/search_binding.dart';
 import 'package:tts_wikitruyen/pages/search/search_page.dart';
+import 'package:tts_wikitruyen/pages/splash/splash_page.dart';
 
-import '../../pages/chapter/chapter_binding.dart';
 import 'app_router_name.dart';
 
 class AppRoutes {
   static final page = [
+    GetPage(name: AppRoutesName.splash, page: () => const SplashPage()),
     GetPage(
       name: AppRoutesName.home,
       page: () => const HomePage(),
@@ -25,17 +25,8 @@ class AppRoutes {
     ),
     GetPage(
       name: AppRoutesName.bookInfo,
-      page: () => BookInfoPage(
-        authorTag: Get.find<String>(tag: 'authorTag'),
-        imgTag: Get.find<String>(tag: 'imgTag'),
-        titleTag: Get.find<String>(tag: 'titleTag'),
-      ),
+      page: () => const BookInfoPage(),
       binding: BookInfoBiding(),
-    ),
-    GetPage(
-      name: AppRoutesName.chapter,
-      page: () => const ChapterPage(),
-      binding: ChapterBinding(),
     ),
   ];
 }

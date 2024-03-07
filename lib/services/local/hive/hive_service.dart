@@ -1,6 +1,8 @@
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
-import 'package:tts_wikitruyen/models/book.dart';
+import 'package:tts_wikitruyen/html/html.dart';
+
+import '../../../model/model.dart';
 
 class HiveServices {
   HiveServices._();
@@ -11,6 +13,7 @@ class HiveServices {
   static const String stKeyPraramBook = 'book';
   static const String stKeyVersion = 'version';
   static const String stKeyIsOffline = 'offline';
+  static const String stKeyDataLeak = 'dataleak';
 
   static Future init() async {
     final appDocumentDirectory =
@@ -19,17 +22,30 @@ class HiveServices {
     boxApp = await Hive.openBox(_keyApp);
   }
 
-  static addVersion({required String version}) async {
+  static Future addVersion({required String version}) async {
     version.trim();
     await boxApp.put(stKeyVersion, version);
   }
 
-  static addStateOffline({required bool isOffline}) async {
+  static Future addListWebiste({required ListWebsite list}) async {
+    await boxApp.put(stKeyDataLeak, list.toJson());
+  }
+
+  static ListWebsite getListWebsite() {
+    final box = boxApp.get(stKeyDataLeak);
+    if (box != null) {
+      return ListWebsite.fromJson(box);
+    } else {
+      return ListWebsite.none();
+    }
+  }
+
+  static Future addStateOffline({required bool isOffline}) async {
     //1 true 0 false
     await boxApp.put(stKeyIsOffline, isOffline ? '1' : '0');
   }
 
-  static addBook({required Book book}) async {
+  static Future addBook({required Book book}) async {
     await boxApp.put(stKeyPraramBook, book.toMapFullOption());
   }
 
@@ -42,14 +58,14 @@ class HiveServices {
     }
   }
 
-  static String getVersion() {
-    final box = boxApp.get(stKeyPraramBook);
-    return '$box';
+  static String? getVersion() {
+    final box = boxApp.get(stKeyVersion);
+    return box;
   }
 
   static bool getIsOffline() {
-    final box = boxApp.get(stKeyPraramBook);
-    if (box == null || '1'.compareTo('$box') == 0) {
+    final box = boxApp.get(stKeyIsOffline);
+    if (box == null || '0'.compareTo('$box') == 0) {
       return false;
     } else {
       return true;

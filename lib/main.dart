@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:tts_wikitruyen/dependence_injection.dart';
+
 import 'package:tts_wikitruyen/res/const_app.dart';
 
 import 'res/routers/app_router.dart';
 import 'res/routers/app_router_name.dart';
 import 'res/theme/theme_config.dart';
-import 'services/local/hive/hive_service.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  DI.init();
-  HiveServices.init();
   runApp(const AppRoot());
 }
 

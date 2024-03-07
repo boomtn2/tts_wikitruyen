@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:tts_wikitruyen/pages/data_push.dart';
 import 'package:tts_wikitruyen/res/const_app.dart';
 import 'package:tts_wikitruyen/res/routers/app_router_name.dart';
+
 import 'package:uuid/uuid.dart';
 
-import '../../models/book.dart';
+import '../../model/model.dart';
 import 'image_networkcustom.dart';
 import 'loading_widget.dart';
 
@@ -29,10 +31,13 @@ class BookListItem extends StatelessWidget {
     return InkWell(
         onTap: funtionOption == null
             ? () {
-                Get.lazyPut(() => imgTag, tag: 'imgTag');
-                Get.lazyPut(() => titleTag, tag: 'titleTag');
-                Get.lazyPut(() => authorTag, tag: 'authorTag');
-                Get.lazyPut(() => book, tag: 'Page BookInfo');
+                DataPush.pushTagHero({
+                  'imgTag': imgTag,
+                  'titleTag': titleTag,
+                  'authorTag': authorTag
+                });
+                DataPush.pushBook(book: book);
+                DataPush.isStateOnline();
                 Get.toNamed(AppRoutesName.bookInfo);
               }
             : () {
@@ -109,6 +114,7 @@ class BookListItem extends StatelessWidget {
                     book.history == null
                         ? book.bookViews
                         : book.history!.nameChapter,
+                    maxLines: 1,
                     style: TextStyle(
                       fontSize: 13.0,
                       color: Get.theme.textTheme.bodySmall!.color,
