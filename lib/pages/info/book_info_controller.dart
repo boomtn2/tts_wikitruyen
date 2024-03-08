@@ -53,6 +53,7 @@ class BookInfoController extends GetxController {
   void initOffline() async {
     book.value = DataPush.getBook();
     controllerTTS.initInfoTTS();
+    _checkDownload();
     isLoadListChapter.value = true;
     bookInfo.value =
         await DatabaseHelper.internal().getBookInfoOffline(book: book.value);

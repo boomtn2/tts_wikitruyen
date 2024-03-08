@@ -52,9 +52,14 @@ class DialogDownload extends StatelessWidget {
                           _controller.statusDownload.value =
                               StatusDownload.stop;
                         },
-                        child: const Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [Icon(Icons.cancel), Text('Hủy tải')],
+                        child: InkWell(
+                          onTap: () {
+                            Get.back();
+                          },
+                          child: const Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [Icon(Icons.cancel), Text('Hủy tải')],
+                          ),
                         )),
                   ],
                 ),

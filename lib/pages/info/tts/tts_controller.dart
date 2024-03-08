@@ -102,6 +102,7 @@ class ControllerTTS {
 
   void _setNewDataTTS() {
     final data = splitTextIntoSentences(chapter.value.text);
+    dataListText.value = data;
     _controllerHandlerTTS.setTexts(
         index: 0, texts: data, title: chapter.value.title);
   }
@@ -275,9 +276,7 @@ class ControllerTTS {
 
   List<String> splitTextIntoSentences(String inputText) {
     // inputText = inputText.replaceAll(RegExp(r'[^a-zA-ZÀ-ỹ0-9{1,}.!:? "]+'), '');
-    inputText = inputText.replaceAll(r'\n', '.');
-    inputText = inputText.replaceAll(RegExp(r'\.+'), '.');
-    inputText = inputText.replaceAll('.', '.\n');
+    inputText = xuLyDauVaoString(inputText);
     List<String> segments = [];
     int maxInput = _controllerHandlerTTS.maxSpeechInputLength() ?? 1000;
     while (inputText.isNotEmpty) {
@@ -296,8 +295,15 @@ class ControllerTTS {
       segments.add(segment);
       inputText = inputText.substring(endIndex).trimLeft();
     }
-    dataListText.value = segments;
+
     return segments;
+  }
+
+  String xuLyDauVaoString(String inputText) {
+    inputText = inputText.replaceAll(r'\n', '.');
+    inputText = inputText.replaceAll(RegExp(r'\.+'), '.');
+    inputText = inputText.replaceAll('.', '.\n');
+    return inputText;
   }
 
   void setSpeedRate({required double speedRate}) async {
@@ -328,5 +334,51 @@ class ControllerTTS {
     autoLoading = false;
 
     _controllerHandlerTTS.stop();
+  }
+
+  void selectString(String st, int index) {
+    int indexTTSSelect = index;
+    List<String> dataTTS = [];
+
+    //head < index
+    for (int i = 0; i < index; ++i) {
+      dataTTS.add(dataListText[i]);
+    }
+
+    //between == index
+    List<String> between = _slipText(stSlip: st, st: dataListText[index]);
+    //get firt index list slip
+    dataTTS.addAll(between);
+    if (between.length > 1) {
+      indexTTSSelect += 1;
+    }
+
+    //last index + 1
+    for (int i = index + 1; i < dataListText.length; ++i) {
+      dataTTS.add(dataListText[i]);
+    }
+
+    stopTTS();
+    _initWordSpeech();
+    dataListText.value = dataTTS;
+    _controllerHandlerTTS.setTexts(
+        index: indexTTSSelect, texts: dataTTS, title: chapter.value.title);
+    if (_controllerHandlerTTS.ttsStatus() == TtsStatus.error) {
+      _handleError(error: _controllerHandlerTTS.messError());
+    }
+  }
+
+  List<String> _slipText({required String stSlip, required String st}) {
+    List<String> listStringSplit = st.split(stSlip);
+
+    for (int i = 0; i < listStringSplit.length; ++i) {
+      if (i == 0) {
+      } else {
+        String temp = stSlip + listStringSplit[i];
+        listStringSplit[i] = temp;
+      }
+    }
+
+    return listStringSplit;
   }
 }

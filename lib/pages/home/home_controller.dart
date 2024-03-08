@@ -92,6 +92,7 @@ class HomeController extends GetxController {
 
   _initSQLite() async {
     listHistory.value = await DatabaseHelper.internal().getListBookHistory();
+    listHistory.value = listHistory.reversed.toList();
     listFavorite.value = await DatabaseHelper.internal().getListBookFavorite();
     listDownload.value = await DatabaseHelper.internal().getListBookOffline();
   }

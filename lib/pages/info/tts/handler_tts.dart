@@ -116,7 +116,7 @@ class HandlerTTS extends BaseAudioHandler {
 
     //init tts
     _listText = texts;
-    _indexListTexts = 0;
+    _indexListTexts = index;
     _indexPause = 0;
     _indextContineus = 0;
 
