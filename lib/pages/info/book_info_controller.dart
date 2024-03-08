@@ -119,9 +119,13 @@ class BookInfoController extends GetxController {
       }
     }
 
+    String title = chapterDownload.value.title;
+    if (title.trim().compareTo('') == 0) {
+      title = '${countDownload.value} ${book.value.bookName}';
+    }
     int chapterResponse = await sqlite.insertChapter(
         id: book.value.id,
-        nameChapter: chapterDownload.value.title,
+        nameChapter: title,
         text: chapterDownload.value.text,
         linkChapter: chapterDownload.value.linkChapter);
     if (chapterResponse != 0) {
