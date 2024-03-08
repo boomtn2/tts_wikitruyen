@@ -54,6 +54,9 @@ class DialogDownload extends StatelessWidget {
                         },
                         child: InkWell(
                           onTap: () {
+                            _controller.statusDownload.value =
+                                StatusDownload.stop;
+
                             Get.back();
                           },
                           child: const Column(
