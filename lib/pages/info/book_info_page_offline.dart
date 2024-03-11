@@ -75,13 +75,15 @@ class _BookInfoPageOfflineState extends State<BookInfoPageOffline> {
               children: _controller.bookInfo.value.dsChuong.entries
                   .map((e) => InkWell(
                       onTap: () {
-                        _scrollListView.jumpTo(0);
                         _controller.selectedChapterOffline(e.value, e.key);
+                        _scrollListView.jumpTo(0);
                       },
                       child: Card(
                           child: Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Text(e.key),
+                        child: SizedBox(
+                            width: MediaQuery.of(context).size.width,
+                            child: Text(e.key)),
                       ))))
                   .toList(),
             ),

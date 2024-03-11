@@ -28,15 +28,6 @@ class WVController extends GetxController {
   final WebViewController controller = WebViewController();
   RxString moTa = ''.obs;
 
-  void inintHandleListenEvent() {
-    listChuong.listen((p0) {
-      if (listChuong.isEmpty) {
-        Get.snackbar('Lỗi:',
-            'Hiển thị danh sách chương thất bại! \n Yêu cầu bấm nút reload 🔄️');
-      }
-    });
-  }
-
   void loadRequest(String link) {
     findWebsiteToLink(link);
     controller
@@ -51,7 +42,7 @@ class WVController extends GetxController {
               await theLoaiFCT();
               await moTaFCT();
             }
-            await Future.delayed(const Duration(seconds: 1));
+
             await loadChapter();
             await loadIndexing();
 
@@ -79,8 +70,12 @@ class WVController extends GetxController {
     }
   }
 
-  void reload() {
+  void reload() async {
     controller.reload();
+
+    await Future.delayed(const Duration(seconds: 2));
+    await loadChapter();
+    await loadIndexing();
   }
 
   Future loadIndexing() async {
@@ -124,9 +119,9 @@ class WVController extends GetxController {
         String value = element['textContent'];
         mapData.addAll({key: value});
       }
-      // listChuong.clear();
-      // listChuong.addAll(mapData);
-      listChuong.value = mapData;
+      if (mapData.isNotEmpty) {
+        listChuong.value = mapData;
+      }
     } catch (e) {
       if (kDebugMode) {
         print(e);

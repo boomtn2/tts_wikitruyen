@@ -35,14 +35,14 @@ class WidgetTextTTS extends StatelessWidget {
     for (var word in words) {
       spans.add(
         TextSpan(
-          text: word + '.\n\n',
+          text: '$word.\n\n',
           recognizer: LongPressGestureRecognizer()
             ..onLongPress = () {
-              _controllerTTS.selectString(word + '.', index);
+              _controllerTTS.selectString('$word.', index);
 
               Get.snackbar('Vị trí nghe:', word);
             },
-          style: context.textTheme.labelLarge,
+          style: context.textTheme.titleLarge,
         ),
       );
     }

@@ -12,9 +12,9 @@
         </intent>
     </queries>  
     <application
-        android:label="tts_wikitruyen"
+        android:label="Audio Quân Hôn Nữ Cường"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/launcher_icon">
         <activity
             android:name="com.ryanheise.audioservice.AudioServiceActivity"
             android:exported="true"

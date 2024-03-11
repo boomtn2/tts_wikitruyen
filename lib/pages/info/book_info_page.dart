@@ -48,7 +48,10 @@ class _BookInfoPageState extends State<BookInfoPage> {
                   style: ButtonStyle(
                       backgroundColor:
                           MaterialStateProperty.all(Colors.indigo)),
-                  onPressed: () => Get.dialog(DialogDownload()),
+                  onPressed: () {
+                    print(_controller.chapterDownload.value);
+                    Get.dialog(DialogDownload());
+                  },
                   child: const Icon(Icons.download)),
             ),
             Obx(

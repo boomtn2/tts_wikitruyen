@@ -259,6 +259,7 @@ class HandlerTTS extends BaseAudioHandler {
 
   @override
   Future<void> skipToNext() async {
+    _stopTTS();
     _setTtsStatus(status: TtsStatus.complate);
     _playStateAudioHandler();
   }

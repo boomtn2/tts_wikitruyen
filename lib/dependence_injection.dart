@@ -9,7 +9,7 @@ class DI {
         () => AudioService.init(
             builder: () => HandlerTTS(),
             config: const AudioServiceConfig(
-              androidNotificationChannelId: 'com.example.tts_wikitruyen',
+              androidNotificationChannelId: 'hit.coder.ttsaudioquanhonngontinh',
               androidNotificationChannelName: 'Audio',
               androidNotificationOngoing: true,
             )),

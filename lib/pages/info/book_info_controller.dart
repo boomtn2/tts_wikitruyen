@@ -138,7 +138,8 @@ class BookInfoController extends GetxController {
   Future<Chapter?> _loadChapterOnline(
       {required String path, required QuerryGetChapterHTML html}) async {
     try {
-      client.url = path;
+      Uri.parse(path);
+      client.baseURLClient = path;
       var response = await NetworkExecuter().excute(router: client);
 
       if (response is dio.Response && response.statusCode == 200) {
@@ -173,7 +174,7 @@ class BookInfoController extends GetxController {
         bookInfo.value = controllerWV.getBookInfo();
       });
       controllerWV.listChuong.listen((p0) {
-        if (isSetFist == false) {
+        if (isSetFist == false && p0.isNotEmpty) {
           isSetFist = true;
           if (isDownloaded == false) {
             chapterDownload.value = Chapter(
@@ -194,7 +195,7 @@ class BookInfoController extends GetxController {
               html: _website.chapterhtml);
         }
       });
-    } else {}
+    }
   }
 
   void _checkDownload() async {
