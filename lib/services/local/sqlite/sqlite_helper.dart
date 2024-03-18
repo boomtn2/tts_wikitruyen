@@ -6,7 +6,7 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
-import '../../../model/model.dart';
+import '../../../models/models_export.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper.internal();
@@ -154,7 +154,7 @@ class DatabaseHelper {
 
   // Thêm dữ liệu
   Future<int> insertBookOffline(
-      {required BookInfo item, required Book book}) async {
+      {required BookInfoModel item, required BookModel book}) async {
     return _insertDB(tableBook, {
       columnId: book.id,
       imgPath: book.imgPath,
@@ -166,7 +166,7 @@ class DatabaseHelper {
     });
   }
 
-  Future<int> insertBookHistory({required Book book}) async {
+  Future<int> insertBookHistory({required BookModel book}) async {
     return await _insertDB(tableBookHistory, {
       columnId: book.id,
       imgPath: book.imgPath,
@@ -176,7 +176,7 @@ class DatabaseHelper {
     });
   }
 
-  Future<int> insertBookFavorite({required Book book}) async {
+  Future<int> insertBookFavorite({required BookModel book}) async {
     return _insertDB(tableBookFavorite, {
       columnId: book.id,
       imgPath: book.imgPath,
@@ -237,6 +237,11 @@ class DatabaseHelper {
     return _deleteDB(tableBookHistory, '$columnId = ?', [id]);
   }
 
+  Future<int> deleteAllBookHistory() async {
+    await _deleteDB(tableHistory, null, null);
+    return _deleteDB(tableBookHistory, null, null);
+  }
+
   Future<int> deleteHistory(String id) async {
     return _deleteDB(tableHistory, '$columnId = ?', [id]);
   }
@@ -253,13 +258,13 @@ class DatabaseHelper {
     await _deleteDB(tableHistory, null, null);
   }
 
-  Future<List<Book>> getListBookOffline() async {
-    List<Book> lsBook = [];
+  Future<List<BookModel>> getListBookOffline() async {
+    List<BookModel> lsBook = [];
 
     final List<Map<String, dynamic>> dataList = await _getDB(tableBook);
 
     for (var element in dataList) {
-      lsBook.add(Book(
+      lsBook.add(BookModel(
           imgPath: element[imgPath],
           bookPath: element[bookPath],
           bookName: element[bookName],
@@ -273,13 +278,13 @@ class DatabaseHelper {
     return lsBook;
   }
 
-  Future<List<Book>> getListBookFavorite() async {
-    List<Book> lsBook = [];
+  Future<List<BookModel>> getListBookFavorite() async {
+    List<BookModel> lsBook = [];
 
     final List<Map<String, dynamic>> dataList = await _getDB(tableBookFavorite);
 
     for (var element in dataList) {
-      lsBook.add(Book(
+      lsBook.add(BookModel(
           imgPath: element[imgPath],
           bookPath: element[bookPath],
           bookName: element[bookName],
@@ -293,13 +298,17 @@ class DatabaseHelper {
     return lsBook;
   }
 
-  Future<List<Book>> getListBookHistory() async {
-    List<Book> lsBook = [];
+  Future<int> isFavorite(String id) {
+    return daTonTai(id, tableBookFavorite);
+  }
+
+  Future<List<BookModel>> getListBookHistory() async {
+    List<BookModel> lsBook = [];
 
     final List<Map<String, dynamic>> dataList = await _getDB(tableBookHistory);
 
     for (var element in dataList) {
-      Book book = Book(
+      BookModel book = BookModel(
           imgPath: element[imgPath],
           bookPath: element[bookPath],
           bookName: element[bookName],
@@ -316,8 +325,9 @@ class DatabaseHelper {
     return lsBook;
   }
 
-  Future<BookInfo> getBookInfoOffline({required Book book}) async {
-    BookInfo bookInfo = BookInfo(theLoai: {}, moTa: moTa, dsChuong: {});
+  Future<BookInfoModel> getBookInfoOffline({required BookModel book}) async {
+    BookInfoModel bookInfo =
+        BookInfoModel(theLoai: {}, moTa: moTa, dsChuong: {});
     bookInfo.book = book;
     try {
       final List<Map<String, dynamic>> dataList = await _getDB(tableBook,
@@ -327,7 +337,7 @@ class DatabaseHelper {
 
       final List<Map<String, dynamic>> listNameChuong = await _getDB(
           tableChapter,
-          columns: [nameChapter],
+          columns: [nameChapter, linkChapter],
           where: '$columnId = ?',
           whereArgs: [book.id]);
 
@@ -338,10 +348,10 @@ class DatabaseHelper {
         for (var element in listTheMoai.entries) {
           bookInfo.theLoai.addAll({'${element.key}': '${element.value}'});
         }
-        int i = 0;
+
         for (var chapter in listNameChuong) {
-          bookInfo.dsChuong.addAll(
-              {'[${i++}]${chapter[nameChapter]}': chapter[nameChapter]});
+          bookInfo.dsChuong
+              .addAll({'${chapter[linkChapter]}': chapter[nameChapter]});
         }
       }
     } catch (e) {
@@ -351,14 +361,14 @@ class DatabaseHelper {
     return bookInfo;
   }
 
-  Future<History?> getHistory({required String id}) async {
+  Future<HistoryModel?> getHistory({required String id}) async {
     final List<Map<String, dynamic>> dataList = await _getDB(tableHistory,
         columns: [nameChapter], where: '$columnId = ?', whereArgs: [id]);
     if (dataList.isEmpty) {
       return null;
     } else {
       String text = dataList.first[nameChapter];
-      return History(nameChapter: text, chapterPath: '', text: '');
+      return HistoryModel(nameChapter: text, chapterPath: '', text: '');
     }
   }
 
@@ -367,7 +377,7 @@ class DatabaseHelper {
     try {
       final dataList = await _getDB(tableChapter,
           columns: [textChapter],
-          where: '$columnId = ? AND $nameChapter Like ?',
+          where: '$columnId = ? AND $linkChapter Like ?',
           whereArgs: [id, nChapter]);
       String text = '${dataList.first[textChapter]}';
       return text;

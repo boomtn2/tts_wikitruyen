@@ -1,8 +1,7 @@
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
-import 'package:tts_wikitruyen/html/html.dart';
 
-import '../../../model/model.dart';
+import 'package:tts_wikitruyen/models/models_export.dart';
 
 class HiveServices {
   HiveServices._();
@@ -45,16 +44,16 @@ class HiveServices {
     await boxApp.put(stKeyIsOffline, isOffline ? '1' : '0');
   }
 
-  static Future addBook({required Book book}) async {
+  static Future addBook({required BookModel book}) async {
     await boxApp.put(stKeyPraramBook, book.toMapFullOption());
   }
 
-  static Book getBook() {
+  static BookModel getBook() {
     final box = boxApp.get(stKeyPraramBook);
     if (box == null) {
-      return Book.none();
+      return BookModel.none();
     } else {
-      return Book.json(box);
+      return BookModel.json(box);
     }
   }
 
